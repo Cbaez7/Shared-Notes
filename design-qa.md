@@ -1,36 +1,35 @@
-# Design QA — Codex-inspired SharedNotes shell (latest pass)
+# Design QA — Mobile authentication refinement
 
 ## Comparison target
 
-- Source visual truth: `C:\Users\emper\AppData\Local\Temp\codex-clipboard-a2e894aa-76fc-44c9-8cb6-191989627054.png` (1920 × 1030), informed by the earlier Codex screenshots.
-- Implementation: `http://localhost:5173/`, dark-mode Notes view.
-- Intended state: desktop shell with left project/history rail, central note workspace, and right reminders panel.
+- Source visual truth: `C:\Users\emper\.codex\codex-remote-attachments\01a0aef5-d60e-7641-adc4-fadbc8de8225\0278347C-6B08-44BD-B2B4-4CE452142423\1-Photo-1.jpg` (590 × 1280).
+- Intended state: signed-out dark-mode SharedNotes sign-in screen on iPhone Safari.
+- Implementation: local SharedNotes authentication route after the mobile CSS refinement.
 
-## Evidence
+## Findings and fixes
 
-The in-app browser accessibility snapshot confirms the rendered implementation exposes the compact SharedNotes control, theme control, create-note control, search, Notes/To-do tabs, folder tree, note history, sync status, and an avatar-only account button. The browser bridge did not return a screenshot/capture API, so an implementation image could not be put beside the supplied reference. No density normalization was possible. The fixed desktop layout was adjusted in code to a 364px left rail and a 376px widget sitting 116px below the top edge, matching the supplied reference geometry.
+- [P1] The heading was near-black against a dark card.
+  - Fix: added an explicit dark-mode heading color.
+- [P1] The card used the broad desktop rhythm and could crowd Safari's bottom controls.
+  - Fix: constrained the card, adjusted its padding and vertical spacing, and made the screen safe-area and dynamic-viewport aware.
+- [P2] iOS autofill rendered the email field with a bright yellow fill.
+  - Fix: added dark-theme WebKit autofill styling to retain the input's dark surface and readable text.
+- [P2] Mobile email entry could apply unwanted casing/correction.
+  - Fix: disabled autocapitalization and autocorrect on the email control.
 
 ## Required fidelity surfaces
 
-- Fonts and typography: implemented with a compact sans interface hierarchy; visual weight and wrapping could not be screenshot-compared.
-- Spacing and layout rhythm: implementation uses a 280px history/folder rail, central editor, and 318px reminders rail to mirror the source’s major regions; exact visual measurement is blocked.
-- Colors and visual tokens: dark neutral surfaces, quiet borders, and a single purple avatar accent follow the reference direction; screenshot sampling is blocked.
-- Image and icon fidelity: no raster imagery is required by this UI. The implementation uses the Lucide icon library rather than handmade icon drawings.
-- Copy and content: SharedNotes-specific copy is intentionally retained while the source’s Codex labels are used only as layout inspiration.
+- Fonts and typography: the display heading remains the product's existing typeface; its dark-mode contrast is now explicit.
+- Spacing and layout rhythm: mobile padding, card width, and control heights now use the iOS safe area and mobile viewport.
+- Colors and visual tokens: dark background, card, fields, and WebKit autofill share the same dark token family.
+- Image and icon fidelity: no image asset changes were needed; the existing brand mark is preserved.
+- Copy and content: existing product copy is preserved.
 
-## Findings
+## Verification
 
-- [P2] Pixel-level layout comparison is unverified.
-  Location: entire desktop shell.
-  Evidence: the source screenshots are available, but the in-app browser returned only accessibility content for the local implementation.
-  Impact: exact panel widths, type scale, and visual density cannot be accepted as a faithful screenshot match.
-  Fix: capture the running `localhost:5173` desktop view through a browser surface that provides screenshots, then compare it directly with the source at the same viewport.
-
-## Primary interaction coverage
-
-- Build passed (`npm run build`).
-- Notes/folders/tasks/subtasks sync smoke test passed (`npm run test:smoke`).
-- The preview’s accessibility tree confirms the new shell controls are rendered.
+- `npm run build` passed.
+- `npm run test:smoke` passed, including second-device sync against one server database.
+- Visual browser capture is blocked: the available `localhost:5173` preview is already signed in, and changing it to signed-out would alter the user's active local session. The alternate local address is mapped to an unrelated component preview, so it cannot provide equivalent evidence.
 
 ## Final result
 

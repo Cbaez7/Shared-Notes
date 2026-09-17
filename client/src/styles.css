@@ -122,3 +122,30 @@
 .mobile-preview .mobile-nav { position:absolute; display:grid; }
 .mobile-preview .title { margin-top:26px; font-size:2.2rem; }
 .mobile-preview .editor textarea { font-size:16px; line-height:1.7; }
+
+/* Authentication is a self-contained screen: keep it readable and within the
+   iOS visual viewport, including when Safari displays its bottom controls. */
+.auth { min-height:100dvh; padding:clamp(24px, 6vw, 48px); }
+.auth-card { box-sizing:border-box; }
+.auth h1 { color:#202944; }
+[data-theme='dark'] .auth h1 { color:#f4f4f2; }
+[data-theme='dark'] .auth input:-webkit-autofill,
+[data-theme='dark'] .auth input:-webkit-autofill:hover,
+[data-theme='dark'] .auth input:-webkit-autofill:focus {
+  -webkit-text-fill-color:#edf0f8;
+  -webkit-box-shadow:0 0 0 1000px #141a2b inset;
+  box-shadow:0 0 0 1000px #141a2b inset;
+  caret-color:#edf0f8;
+}
+@media (max-width:767px) {
+  .auth { align-items:center; padding:calc(18px + env(safe-area-inset-top)) 16px calc(26px + env(safe-area-inset-bottom)); }
+  .auth-card { width:100%; max-width:420px; padding:28px 24px 24px; border-radius:22px; }
+  .auth > .theme-toggle { top:calc(12px + env(safe-area-inset-top)); right:16px; }
+  .brand-mark { width:40px; height:40px; margin-bottom:14px; border-radius:12px; font-size:22px; }
+  .auth h1 { font-size:1.9rem; }
+  .auth > .auth-card > p { margin:12px 0 0; font-size:.96rem; }
+  .auth form { gap:14px; margin:24px 0 14px; }
+  .auth input { min-height:48px; padding:11px 13px; font-size:16px; }
+  .auth .primary { min-height:50px; font-size:1rem; }
+  .link-button { min-height:40px; }
+}
