@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Check, CheckCheck, ChevronLeft, ChevronRight, Circle, Clock3, Folder as FolderIcon, FolderOpen, ListTodo, MoreHorizontal, Plus, Search, Settings2, Trash2 } from 'lucide-react';
+import { Check, CheckCheck, ChevronLeft, ChevronRight, Circle, Clock3, Folder as FolderIcon, FolderOpen, ListTodo, MoreHorizontal, Plus, Search, Settings2, Share2, Trash2 } from 'lucide-react';
 import { api, AuthError, ConflictError } from './api';
 import { localStore } from './db';
 import type { Folder, Note, SyncState, Task, User } from './types';
@@ -64,6 +64,8 @@ export default function App() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [noteMenuId, setNoteMenuId] = useState<string | null>(null);
   const [folderMenuId, setFolderMenuId] = useState<string | null>(null);
+  const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
+  const [mobileSwipeAction, setMobileSwipeAction] = useState<{ id: string; action: 'folder' | 'delete' } | null>(null);
   const [syncEnabled, setSyncEnabled] = useState(() => localStorage.getItem('sharednotes-auto-sync') !== 'false');
   const [status, setStatus] = useState<SyncState>(navigator.onLine ? 'synced' : 'offline');
   const [mobileEditor, setMobileEditor] = useState(false);
@@ -72,6 +74,9 @@ export default function App() {
   const tasksRef = useRef<Task[]>([]);
   const syncTimer = useRef<number | undefined>();
   const noteBodyRef = useRef<HTMLTextAreaElement | null>(null);
+  const notePressTimer = useRef<number | undefined>();
+  const noteGesture = useRef<{ id: string; x: number; y: number } | null>(null);
+  const suppressNoteOpen = useRef(false);
   useEffect(() => { notesRef.current = notes; }, [notes]);
   useEffect(() => { foldersRef.current = folders; }, [folders]);
   useEffect(() => { tasksRef.current = tasks; }, [tasks]);
@@ -142,9 +147,22 @@ export default function App() {
   useLayoutEffect(() => { const textarea = noteBodyRef.current; if (!textarea) return; textarea.style.height = 'auto'; textarea.style.height = `${textarea.scrollHeight}px`; }, [active?.body]);
   const noteTasks = useMemo(() => active ? parseTasks(active.body) : [], [active]);
   useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); setCommandOpen(true); } if (event.key === 'Escape') setCommandOpen(false); };
+    const onKeyDown = (event: KeyboardEvent) => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); setCommandOpen(true); } if (event.key === 'Escape') { setCommandOpen(false); setNoteMenuId(null); setFolderMenuId(null); setMobileSwipeAction(null); } };
     window.addEventListener('keydown', onKeyDown); return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
+  useEffect(() => {
+    if (!noteMenuId) return;
+    const closeMenu = (event: PointerEvent) => {
+      if (!(event.target instanceof Element) || !event.target.closest('[data-note-actions]')) {
+        setNoteMenuId(null);
+        setFolderMenuId(null);
+        setMobileSwipeAction(null);
+      }
+    };
+    document.addEventListener('pointerdown', closeMenu);
+    return () => document.removeEventListener('pointerdown', closeMenu);
+  }, [noteMenuId]);
+  useEffect(() => () => window.clearTimeout(notePressTimer.current), []);
   const saveNoteChange = (note: Note, patch: Partial<Pick<Note, 'title' | 'body' | 'folder_id'>>) => {
     const changed = { ...note, ...patch, updated_at: new Date().toISOString(), dirty: true };
     setNotes((current) => { const next = current.map((note) => note.id === changed.id ? changed : note).sort((a, b) => b.updated_at.localeCompare(a.updated_at)); void localStore.put(changed); return next; });
@@ -153,6 +171,63 @@ export default function App() {
   const saveChange = (patch: Partial<Pick<Note, 'title' | 'body' | 'folder_id'>>) => { if (active) saveNoteChange(active, patch); };
   const createNote = () => { const note = { ...blankNote(), folder_id: folderId }; setNotes((current) => [note, ...current]); void localStore.put(note); setActiveId(note.id); setMobileEditor(true); setStatus(navigator.onLine ? 'saving' : 'offline'); window.setTimeout(() => void sync(), 0); };
   const deleteNote = (note: Note) => { const deleted = { ...note, deleted_at: new Date().toISOString(), updated_at: new Date().toISOString(), dirty: true }; setNotes((current) => current.map((item) => item.id === deleted.id ? deleted : item)); void localStore.put(deleted); if (activeId === note.id) { setActiveId(visibleNotes.find((item) => item.id !== note.id)?.id ?? null); setMobileEditor(false); } setNoteMenuId(null); setFolderMenuId(null); window.setTimeout(() => void sync(), 0); };
+  const shareNote = async (note: Note) => {
+    const text = [noteTitle(note), note.body.trim()].filter(Boolean).join('\n\n');
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      const helper = document.createElement('textarea');
+      helper.value = text;
+      helper.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
+      document.body.append(helper);
+      helper.select();
+      document.execCommand('copy');
+      helper.remove();
+    }
+    setCopiedNoteId(note.id);
+    setNoteMenuId(null);
+    setFolderMenuId(null);
+    window.setTimeout(() => setCopiedNoteId((current) => current === note.id ? null : current), 1800);
+  };
+  const clearNotePress = () => {
+    window.clearTimeout(notePressTimer.current);
+    notePressTimer.current = undefined;
+  };
+  const cancelNotePress = () => {
+    clearNotePress();
+    noteGesture.current = null;
+  };
+  const startNotePress = (note: Note, event: React.PointerEvent<HTMLButtonElement>) => {
+    if (event.pointerType === 'mouse') return;
+    clearNotePress();
+    noteGesture.current = { id: note.id, x: event.clientX, y: event.clientY };
+    notePressTimer.current = window.setTimeout(() => {
+      suppressNoteOpen.current = true;
+      setMobileSwipeAction(null);
+      setNoteMenuId(note.id);
+      setFolderMenuId(null);
+      navigator.vibrate?.(10);
+    }, 480);
+  };
+  const finishNotePress = (note: Note, event: React.PointerEvent<HTMLButtonElement>) => {
+    clearNotePress();
+    const gesture = noteGesture.current;
+    noteGesture.current = null;
+    if (!gesture || gesture.id !== note.id) return;
+    const dx = event.clientX - gesture.x;
+    const dy = event.clientY - gesture.y;
+    if (Math.abs(dx) < 70 || Math.abs(dx) <= Math.abs(dy) * 1.25) return;
+    suppressNoteOpen.current = true;
+    setNoteMenuId(null);
+    setFolderMenuId(null);
+    setMobileSwipeAction({ id: note.id, action: dx > 0 ? 'folder' : 'delete' });
+  };
+  const openNote = (note: Note) => {
+    if (suppressNoteOpen.current) { suppressNoteOpen.current = false; return; }
+    if (mobileSwipeAction?.id === note.id) { setMobileSwipeAction(null); return; }
+    setActiveId(note.id);
+    setMobileEditor(true);
+  };
   const toggleTheme = () => setTheme((current) => current === 'light' ? 'dark' : 'light');
   const pickCommand = (id: string) => { setActiveId(id); setQuery(''); setMobileEditor(true); setCommandOpen(false); };
   const quickCapture = () => {
@@ -191,9 +266,21 @@ export default function App() {
       <button className="search compact-ask" onClick={() => setCommandOpen(true)} aria-label="Open note search" aria-keyshortcuts="Control+K Meta+K"><Search size={16} /><span className="search-label">Search {view === 'notes' ? 'notes' : 'tasks'}</span><kbd>⌘K</kbd></button>
       <div className="workspace-tabs"><button className={view === 'notes' ? 'active' : ''} onClick={() => { setView('notes'); setTaskDetailId(null); }}><FolderIcon size={14} />Notes</button><button className={view === 'tasks' ? 'active' : ''} onClick={() => { setView('tasks'); setTaskDetailId(null); setFolderId(null); }}><ListTodo size={14} />To-do</button></div>
       <nav className="folder-tree" aria-label="Folders"><div><span>Folders</span><button onClick={createFolder} aria-label="Create folder"><Plus size={14} /></button></div><button className={!folderId ? 'selected' : ''} onClick={() => setFolderId(null)}><FolderIcon size={15} />All {view === 'notes' ? 'notes' : 'tasks'}</button>{folders.filter((folder) => !folder.deleted_at).map((folder) => <button className={folder.id === folderId ? 'selected' : ''} key={folder.id} onClick={() => setFolderId(folder.id)}><FolderIcon size={15} />{folder.name}</button>)}</nav>
-      <div className="note-list">{view === 'notes' ? (visibleNotes.length ? visibleNotes.map((note) => <article key={note.id} className={`note-row ${note.id === activeId ? 'selected' : ''}`}><button className="note-open" onClick={() => { setActiveId(note.id); setMobileEditor(true); }}><strong>{noteTitle(note)}</strong><span>{excerpt(note)}</span><time>{relativeTime(note.updated_at)}</time></button><button className="note-menu-trigger" type="button" aria-label={`Open actions for ${noteTitle(note)}`} aria-expanded={noteMenuId === note.id} onClick={() => { setNoteMenuId((current) => current === note.id ? null : note.id); setFolderMenuId(null); }}><MoreHorizontal size={16} /></button>{noteMenuId === note.id && <div className="note-menu" role="menu"><button type="button" role="menuitem" onClick={() => setFolderMenuId((current) => current === note.id ? null : note.id)}>Add to folder <ChevronRight size={14} /></button>{folderMenuId === note.id && <div className="folder-menu-list" role="menu">{folders.filter((folder) => !folder.deleted_at).length ? folders.filter((folder) => !folder.deleted_at).map((folder) => <button key={folder.id} type="button" role="menuitem" onClick={() => { saveNoteChange(note, { folder_id: folder.id }); setNoteMenuId(null); setFolderMenuId(null); }}><FolderIcon size={14} />{folder.name}</button>) : <span>Create a folder first</span>}</div>}{note.folder_id && <button type="button" role="menuitem" onClick={() => { saveNoteChange(note, { folder_id: null }); setNoteMenuId(null); }}>Remove from folder</button>}<button className="danger" type="button" role="menuitem" onClick={() => deleteNote(note)}><Trash2 size={14} />Delete note</button></div>}</article>) : <p className="empty-list">No notes found</p>) : (workspaceTasks.length ? workspaceTasks.map((task) => <button key={task.id} className={`task-row ${task.completed ? 'done' : ''}`} onClick={() => openTask(task.id)}><i>{task.completed ? <Check size={12} /> : <Circle size={13} />}</i><span>{task.title}</span><small>{folders.find((folder) => folder.id === task.folder_id)?.name ?? 'Inbox'}</small></button>) : <p className="empty-list">No tasks here yet</p>)}</div>
+      <div className="note-list">{view === 'notes' ? (visibleNotes.length ? visibleNotes.map((note) => {
+        const swipeAction = mobileSwipeAction?.id === note.id ? mobileSwipeAction.action : null;
+        return <article key={note.id} className={`note-row ${note.id === activeId ? 'selected' : ''} ${swipeAction ? `swipe-${swipeAction}` : ''}`}>
+          {swipeAction && <div className={`mobile-swipe-action ${swipeAction}`}><button type="button" onClick={() => {
+            if (swipeAction === 'delete') deleteNote(note);
+            else { setMobileSwipeAction(null); setNoteMenuId(note.id); setFolderMenuId(note.id); }
+          }}>{swipeAction === 'delete' ? <><Trash2 size={15} />Delete</> : <><FolderIcon size={15} />Folder</>}</button></div>}
+          <button className="note-open" onPointerDown={(event) => startNotePress(note, event)} onPointerUp={(event) => finishNotePress(note, event)} onPointerCancel={cancelNotePress} onClick={() => openNote(note)}><strong>{noteTitle(note)}</strong><span>{excerpt(note)}</span><time>{relativeTime(note.updated_at)}</time></button>
+          <button className="note-menu-trigger" data-note-actions type="button" aria-label={`Open actions for ${noteTitle(note)}`} aria-expanded={noteMenuId === note.id} onClick={() => { setMobileSwipeAction(null); setNoteMenuId((current) => current === note.id ? null : note.id); setFolderMenuId(null); }}><MoreHorizontal size={16} /></button>
+          {noteMenuId === note.id && <div className="note-menu" data-note-actions role="menu"><button type="button" role="menuitem" onClick={() => void shareNote(note)}><Share2 size={14} />Share note</button><button type="button" role="menuitem" onClick={() => setFolderMenuId((current) => current === note.id ? null : note.id)}>Add to folder <ChevronRight size={14} /></button>{folderMenuId === note.id && <div className="folder-menu-list" role="menu">{folders.filter((folder) => !folder.deleted_at).length ? folders.filter((folder) => !folder.deleted_at).map((folder) => <button key={folder.id} type="button" role="menuitem" onClick={() => { saveNoteChange(note, { folder_id: folder.id }); setNoteMenuId(null); setFolderMenuId(null); }}><FolderIcon size={14} />{folder.name}</button>) : <span>Create a folder first</span>}</div>}{note.folder_id && <button type="button" role="menuitem" onClick={() => { saveNoteChange(note, { folder_id: null }); setNoteMenuId(null); }}>Remove from folder</button>}<button className="danger" type="button" role="menuitem" onClick={() => deleteNote(note)}><Trash2 size={14} />Delete note</button></div>}
+        </article>;
+      }) : <p className="empty-list">No notes found</p>) : (workspaceTasks.length ? workspaceTasks.map((task) => <button key={task.id} className={`task-row ${task.completed ? 'done' : ''}`} onClick={() => openTask(task.id)}><i>{task.completed ? <Check size={12} /> : <Circle size={13} />}</i><span>{task.title}</span><small>{folders.find((folder) => folder.id === task.folder_id)?.name ?? 'Inbox'}</small></button>) : <p className="empty-list">No tasks here yet</p>)}</div>
       <footer className="sidebar-utility"><button className="profile-switcher" onClick={() => setSettingsOpen(true)} aria-label={`Open account settings for ${user.email}`} title={user.email}><b>{user.email.slice(0, 1).toUpperCase()}</b></button><ThemeButton theme={theme} onToggle={toggleTheme} /></footer>
     </aside>
+    {copiedNoteId && <div className="copy-toast" role="status">Note copied to clipboard</div>}
     <section className="editor">{view === 'tasks' ? activeTask ? <div className="task-workspace"><header className="editor-head"><button className="back task-back" onClick={() => { setTaskDetailId(null); setMobileEditor(false); }}><ChevronLeft size={17} />To-do</button><span className={`sync mobile-sync ${status}`}><i />{status === 'synced' ? 'Synced' : status === 'saving' ? 'Saving…' : 'Offline'}</span><div className="editor-tools"><button className="tool-button" onClick={() => setTaskDetailId(null)} aria-label="Back to task history"><ChevronLeft size={17} /></button></div></header><article className="task-document"><div className="task-document-meta"><span>{folders.find((folder) => folder.id === activeTask.folder_id)?.name ?? 'Inbox'}</span><span><Clock3 size={13} />Updated {relativeTime(activeTask.updated_at)}</span></div><h2>{activeTask.title}</h2><button className={`task-close ${activeTask.completed ? 'reopen' : ''}`} onClick={() => updateTask({ ...activeTask, completed: !activeTask.completed })}>{activeTask.completed ? <><Circle size={15} />Reopen task</> : <><CheckCheck size={15} />Finish task</>}</button><section className="subtask-section"><div><strong>Subtasks</strong><span>{activeTask.subtasks.filter((subtask) => subtask.completed).length} of {activeTask.subtasks.length} complete</span></div>{activeTask.subtasks.map((subtask) => <div className="subtask-row" key={subtask.id}><label><input type="checkbox" checked={subtask.completed} onChange={() => toggleSubtask(subtask.id)} /><span>{subtask.title}</span></label><button onClick={() => removeSubtask(subtask.id)} aria-label={`Remove ${subtask.title}`}><Trash2 size={15} /></button></div>)}<form onSubmit={(event) => { event.preventDefault(); addSubtask(); }}><input autoFocus value={subtaskInput} onChange={(event) => setSubtaskInput(event.target.value)} placeholder="Add a subtask…" aria-label="Add a subtask" /><button className="primary"><Plus size={15} />Add subtask</button></form></section></article></div> : <div className="task-editor"><span className="eyebrow">TASK HISTORY</span><h2>All to-do</h2><p>Review every open and completed task. Note reminders stay attached to the note where they were created.</p><form onSubmit={(event) => { event.preventDefault(); createTask(); }}><input value={taskInput} onChange={(event) => setTaskInput(event.target.value)} placeholder="Add a standalone task…" aria-label="New task" /><button className="primary"><Plus size={15} />Add task</button></form><div className="task-summary"><strong>{workspaceTasks.filter((task) => !task.completed).length}</strong><span>open tasks</span></div></div> : active ? <>
       <header className="editor-head"><button className="back" onClick={() => setMobileEditor(false)}><ChevronLeft size={17} />Notes</button><span className={`sync mobile-sync ${status}`}><i />{status === 'synced' ? 'Synced' : status === 'saving' ? 'Saving…' : 'Offline'}</span>{status === 'saving' && <span className="arc-spinner" aria-label="Saving changes" />}</header>
       <div className="note-location"><label>Folder<select value={active.folder_id ?? ''} onChange={(event) => saveChange({ folder_id: event.target.value || null })}><option value="">Inbox</option>{folders.filter((folder) => !folder.deleted_at).map((folder) => <option key={folder.id} value={folder.id}>{folder.name}</option>)}</select></label></div><input className="title" aria-label="Note title" placeholder="Untitled note" value={active.title} onChange={(e) => saveChange({ title: e.target.value })} /><textarea ref={noteBodyRef} aria-label="Note body" placeholder="Start writing…" value={active.body} onChange={(e) => saveChange({ body: e.target.value })} />
@@ -205,6 +292,6 @@ export default function App() {
     {checklistOpen && <div className="command-backdrop" onMouseDown={() => setChecklistOpen(false)}><section className="utility-card" role="dialog" aria-modal="true" aria-label="Checklist" onMouseDown={(event) => event.stopPropagation()}><header><div><span className="capture-eyebrow">TASK LIST</span><h2>{noteTitle(active!)}</h2></div><button className="close-button" onClick={() => setChecklistOpen(false)}>×</button></header>{noteTasks.length ? <div className="task-list">{noteTasks.map((task) => <label key={task.line}><input type="checkbox" checked={task.done} onChange={() => toggleTask(task.line)} /><span>{task.text}</span></label>)}</div> : <p className="utility-empty">Add lines like <code>- [ ] Prepare slides</code> to turn a note into a checklist.</p>}<footer><span>{noteTasks.filter((task) => task.done).length} of {noteTasks.length} complete</span></footer></section></div>}
     {historyOpen && <div className="command-backdrop" onMouseDown={() => setHistoryOpen(false)}><section className="utility-card history-card" role="dialog" aria-modal="true" aria-label="Revision history" onMouseDown={(event) => event.stopPropagation()}><header><div><span className="capture-eyebrow">REVISION TRAIL</span><h2>{noteTitle(active!)}</h2></div><button className="close-button" onClick={() => setHistoryOpen(false)}>×</button></header><div className="activity-thread"><article><i>✦</i><div><strong>Note created</strong><span>{new Date(active!.created_at).toLocaleString()}</span></div></article><article><i>↻</i><div><strong>Last edited</strong><span>{new Date(active!.updated_at).toLocaleString()}</span></div></article><article><i className={status}>●</i><div><strong>{status === 'synced' ? 'Synced to SharedNotes' : status === 'saving' ? 'Saving changes' : 'Waiting for a connection'}</strong><span>Server-aware activity</span></div></article></div></section></div>}
     {settingsOpen && <div className="command-backdrop" onMouseDown={() => setSettingsOpen(false)}><section className="utility-card settings-card" role="dialog" aria-modal="true" aria-label="Settings" onMouseDown={(event) => event.stopPropagation()}><header><div><span className="capture-eyebrow">ACCOUNT & SETTINGS</span><h2>SharedNotes preferences</h2></div><button className="close-button" onClick={() => setSettingsOpen(false)}>×</button></header><div className="settings-group"><span>Signed in as</span><strong>{user.email}</strong></div><div className="settings-row"><div><strong>Appearance</strong><span>{theme === 'dark' ? 'Dark mode' : 'Light mode'}</span></div><button className="setting-choice" onClick={toggleTheme}>{theme === 'dark' ? 'Use light' : 'Use dark'}</button></div><div className="settings-row"><div><strong>Background sync</strong><span>Check for changes every 30 seconds</span></div><button className={`switch ${syncEnabled ? 'on' : ''}`} onClick={() => setSyncEnabled((value) => !value)} aria-pressed={syncEnabled}><i /></button></div><footer><button className="signout" onClick={() => api.logout().finally(() => setUser(null))}>Sign out of this account</button></footer></section></div>}
-    <nav className="mobile-nav" aria-label="Mobile navigation"><button onClick={() => setSettingsOpen(true)} aria-label="Open account settings"><Settings2 size={18} /><span>Settings</span></button><button onClick={() => setCommandOpen(true)} aria-label="Search notes"><Search size={18} /><span>Search</span></button><button className="mobile-capture" onClick={() => { setView('notes'); setCaptureOpen(true); }}><Plus size={20} /><span>Capture</span></button><button className={view === 'tasks' ? 'active' : ''} onClick={() => { setView('tasks'); setTaskDetailId(null); setMobileEditor(false); }}><ListTodo size={18} /><span>To-do</span></button><button className={view === 'notes' ? 'active' : ''} onClick={() => { setView('notes'); setMobileEditor(false); }}><FolderIcon size={18} /><span>Notes</span></button></nav>
+    <nav className="mobile-nav" aria-label="Mobile navigation"><button onClick={() => setSettingsOpen(true)} aria-label="Open account settings"><Settings2 size={19} /></button><button onClick={() => setCommandOpen(true)} aria-label="Search notes"><Search size={19} /></button><button className="mobile-capture" onClick={() => { setView('notes'); setCaptureOpen(true); }} aria-label="Capture a note"><Plus size={21} /></button><button className={view === 'tasks' ? 'active' : ''} onClick={() => { setView('tasks'); setTaskDetailId(null); setMobileEditor(false); }} aria-label="Open to-do"><ListTodo size={19} /></button><button className={view === 'notes' ? 'active' : ''} onClick={() => { setView('notes'); setMobileEditor(false); }} aria-label="Open notes"><FolderIcon size={19} /></button></nav>
   </main>;
 }

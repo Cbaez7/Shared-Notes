@@ -184,3 +184,38 @@
   .note-menu-trigger, .note-menu { display:none; }
   .note-open time { padding-right:0; }
 }
+
+/* Note actions: desktop keeps a compact overflow menu; mobile adds touch-first controls. */
+.note-open { position:relative; transition:transform .22s cubic-bezier(.2,.8,.2,1), background .2s ease; }
+.note-open span { padding-right:34px; }
+.note-menu-trigger { top:31px; }
+.note-menu { top:62px; }
+.copy-toast { position:fixed; z-index:20; right:24px; bottom:24px; border:1px solid #494946; border-radius:9px; padding:10px 13px; color:#efefeb; background:#2d2d2b; box-shadow:0 14px 38px #00000066; font:600 .76rem Manrope,Arial,sans-serif; animation:toast-in .22s cubic-bezier(.2,.8,.2,1); }
+@keyframes toast-in { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+.mobile-swipe-action { display:none; }
+
+@media (max-width:767px) {
+  .mobile-header-controls { display:none!important; }
+  .sidebar .sidebar-utility { display:none!important; }
+  .note-menu-trigger { z-index:2; top:31px; display:grid; opacity:1; }
+  .note-menu { z-index:3; top:62px; display:grid; min-width:202px; }
+  .note-row { overflow:visible; }
+  .note-open { z-index:1; min-height:70px; background:#181817; touch-action:pan-y; }
+  .note-row.selected .note-open { background:#343432; }
+  .note-row.swipe-delete .note-open { transform:translateX(-82px); }
+  .note-row.swipe-folder .note-open { transform:translateX(82px); }
+  .mobile-swipe-action { position:absolute; z-index:0; inset:0; display:flex; align-items:stretch; pointer-events:none; overflow:hidden; border-radius:8px; }
+  .mobile-swipe-action.delete { justify-content:flex-end; background:#652f35; }
+  .mobile-swipe-action.folder { justify-content:flex-start; background:#244c43; }
+  .mobile-swipe-action button { display:flex; align-items:center; justify-content:center; gap:5px; width:82px; border:0; color:#fff; background:transparent; font:700 .67rem Manrope,Arial,sans-serif; pointer-events:auto; }
+  .mobile-swipe-action.delete button { color:#ffdfe1; }
+  .mobile-swipe-action.folder button { color:#d7f4e8; }
+  .mobile-nav { bottom:calc(10px + env(safe-area-inset-bottom)); min-height:56px; transition:transform .28s cubic-bezier(.2,.8,.2,1), box-shadow .28s ease; }
+  .mobile-nav button { min-height:46px; gap:0; transition:transform .2s cubic-bezier(.2,.8,.2,1), color .2s ease, background .2s ease; }
+  .mobile-nav .mobile-capture { min-height:46px; border-radius:13px; transform:none; box-shadow:0 5px 14px #00000044; }
+  .mobile-nav button:active { transform:scale(.9); }
+  .copy-toast { right:16px; bottom:calc(84px + env(safe-area-inset-bottom)); }
+}
+@media (prefers-reduced-motion:reduce) {
+  .note-open, .mobile-nav, .mobile-nav button, .copy-toast { transition:none; animation:none; }
+}
