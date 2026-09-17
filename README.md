@@ -29,7 +29,28 @@ npm run test:smoke
 
 It verifies registration, login, creating a note, and pulling that note as a second device.
 
-## Production deployment
+## Production deployment (Fly.io)
+
+The repo ships a production `Dockerfile` and `fly.toml`. The image builds both workspaces, serves `client-dist` from the Express server, and stores SQLite on a mounted Fly volume at `/data`.
+
+First-time setup (run once):
+
+```bash
+fly apps create sharednotes
+fly volumes create sharednotes_data --region ord --size 1
+fly secrets set JWT_SECRET="$(openssl rand -hex 32)"
+fly deploy
+```
+
+- The app listens on `0.0.0.0:8080`; Fly terminates TLS and forwards HTTP.
+- `JWT_SECRET` is a Fly secret, never a `[env]` entry.
+- The volume `sharednotes_data` persists the SQLite database across redeploys. Fly takes daily snapshots (5 day retention by default), but keep an independent backup of `/data/sharednotes.db`.
+- `CLIENT_ORIGIN` defaults to same-origin; set it with `fly secrets set CLIENT_ORIGIN=https://...` only if you serve the client from a different domain.
+- HTTPS is automatic on `*.fly.dev`. In production the session cookie is marked `Secure`.
+
+A single machine + volume is fine for the first deploy; add a second volume only after planning for SQLite replication (or moving to Postgres).
+
+## Manual production deployment (any host)
 
 1. Copy `.env.example` to `.env`, set a long random `JWT_SECRET`, a persistent `DATABASE_PATH`, and `CLIENT_ORIGIN` to the HTTPS client origin.
 2. Run `npm run build`.

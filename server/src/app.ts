@@ -6,6 +6,9 @@ import rateLimit from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import { randomUUID } from 'node:crypto';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { SqliteDatabase } from './database.js';
 
 const authSchema = z.object({ email: z.string().trim().email().max(254), password: z.string().min(8).max(128) });
@@ -138,6 +141,18 @@ export function createApp(db: SqliteDatabase): express.Express {
     } catch (error) { next(error); }
   });
   app.use('/api', router); app.use(router);
+  const clientDist = process.env.CLIENT_DIST ?? join(fileURLToPath(new URL('.', import.meta.url)), '..', 'client-dist');
+  if (existsSync(clientDist)) {
+    const maxAge = process.env.NODE_ENV === 'production' ? '1y' : '0';
+    app.use(express.static(clientDist, { index: false, maxAge, setHeaders: (res, path) => { if (path.endsWith('sw.js') || path.endsWith('.webmanifest')) res.setHeader('Cache-Control', 'no-cache'); } }));
+    app.get('*', (request, response, next) => {
+      if (request.method !== 'GET' || request.path.startsWith('/api/')) { next(); return; }
+      response.setHeader('Cache-Control', 'no-cache');
+      response.sendFile(join(clientDist, 'index.html'));
+    });
+  } else if (process.env.REQUIRE_STATIC) {
+    throw new Error(`Static client build not found at ${clientDist}`);
+  }
   app.use((error: unknown, _request: Request, response: Response, _next: NextFunction) => {
     if (error instanceof z.ZodError) { response.status(400).json({ error: 'Invalid request', details: error.issues.map((issue) => issue.message) }); return; }
     console.error(error); response.status(500).json({ error: 'Unexpected server error' });
