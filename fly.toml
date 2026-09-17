@@ -1,36 +1,39 @@
-# SharedNotes on Fly.io
+# fly.toml app configuration file generated for shared-notes-gcx7za on 2026-09-17T15:53:23Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
 
-app = "sharednotes"
-primary_region = "ord"
+app = 'shared-notes-gcx7za'
+primary_region = 'ams'
 
 [build]
-  dockerfile = "Dockerfile"
+  dockerfile = 'Dockerfile'
 
 [env]
-  NODE_ENV = "production"
-  PORT = "8080"
-  DATABASE_PATH = "/data/sharednotes.db"
-  CLIENT_DIST = "/app/client-dist"
+  CLIENT_DIST = '/app/client-dist'
+  DATABASE_PATH = '/data/sharednotes.db'
+  NODE_ENV = 'production'
+  PORT = '8080'
+
+[[mounts]]
+  source = 'sharednotes_data'
+  destination = '/data'
 
 [http_service]
   internal_port = 8080
   force_https = true
-  auto_stop_machines = "stop"
+  auto_stop_machines = 'stop'
   auto_start_machines = true
   min_machines_running = 0
-  processes = ["app"]
+  processes = ['app']
 
   [[http_service.checks]]
-    interval = "30s"
-    timeout = "5s"
-    grace_period = "15s"
-    method = "GET"
-    path = "/"
-
-[[mounts]]
-  source = "sharednotes_data"
-  destination = "/data"
+    interval = '30s'
+    timeout = '5s'
+    grace_period = '15s'
+    method = 'GET'
+    path = '/'
 
 [[vm]]
-  size = "shared-cpu-1x"
-  memory = "512mb"
+  size = 'shared-cpu-1x'
+  memory = '512mb'
