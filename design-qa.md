@@ -1,36 +1,35 @@
-# Design QA — Mobile authentication refinement
+# Design QA — Desktop workspace cleanup
 
 ## Comparison target
 
-- Source visual truth: `C:\Users\emper\.codex\codex-remote-attachments\01a0aef5-d60e-7641-adc4-fadbc8de8225\0278347C-6B08-44BD-B2B4-4CE452142423\1-Photo-1.jpg` (590 × 1280).
-- Intended state: signed-out dark-mode SharedNotes sign-in screen on iPhone Safari.
-- Implementation: local SharedNotes authentication route after the mobile CSS refinement.
+- Source visual truth: the supplied desktop references for the compact SharedNotes header, quiet editor header, and sidebar note list.
+- Intended state: desktop SharedNotes with account/theme controls in the sidebar footer, no editor toolbar or capture button, and per-note overflow actions.
+- Implementation: local production build at `http://localhost:5174/`, reviewed at a 1440 × 900 desktop viewport.
 
 ## Findings and fixes
 
-- [P1] The heading was near-black against a dark card.
-  - Fix: added an explicit dark-mode heading color.
-- [P1] The card used the broad desktop rhythm and could crowd Safari's bottom controls.
-  - Fix: constrained the card, adjusted its padding and vertical spacing, and made the screen safe-area and dynamic-viewport aware.
-- [P2] iOS autofill rendered the email field with a bright yellow fill.
-  - Fix: added dark-theme WebKit autofill styling to retain the input's dark surface and readable text.
-- [P2] Mobile email entry could apply unwanted casing/correction.
-  - Fix: disabled autocapitalization and autocorrect on the email control.
+- [P1] Header controls crowded the identity area and editor canvas.
+  - Fix: retained only the brand and New Note control in the sidebar header; moved the account button and theme toggle to the lower-left sidebar footer.
+- [P1] The editor header contained unrelated navigation, checklist, history, and delete controls.
+  - Fix: reduced it to a quiet Notes return control and expanded the editable canvas.
+- [P1] The bottom-right Capture action competed with the note canvas.
+  - Fix: removed the desktop capture action.
+- [P1] Notes had no discoverable per-item edit controls.
+  - Fix: added a hover/focus three-dot menu with Add to folder, conditional Remove from folder, and Delete note actions. Folder choices stay within the menu, and the empty-folder state is explicit.
 
-## Required fidelity surfaces
+## Visual verification
 
-- Fonts and typography: the display heading remains the product's existing typeface; its dark-mode contrast is now explicit.
-- Spacing and layout rhythm: mobile padding, card width, and control heights now use the iOS safe area and mobile viewport.
-- Colors and visual tokens: dark background, card, fields, and WebKit autofill share the same dark token family.
-- Image and icon fidelity: no image asset changes were needed; the existing brand mark is preserved.
-- Copy and content: existing product copy is preserved.
+- Header: desktop preview shows only the SharedNotes mark and New Note control at upper left; account avatar and theme button are placed at lower left.
+- Editor: desktop preview shows a clean Notes return header with no right-side tool cluster or Capture control.
+- Note actions: opening a note's three-dot menu visibly shows Add to folder and Delete note; the menu expands to folder choices (or the clear "Create a folder first" empty state). Remove from folder is conditionally rendered by the note's folder assignment.
+- Layout: the editor now fills the reclaimed right-side space while the sidebar maintains the requested compact hierarchy.
 
-## Verification
+## Automated verification
 
 - `npm run build` passed.
-- `npm run test:smoke` passed, including second-device sync against one server database.
-- Visual browser capture is blocked: the available `localhost:5173` preview is already signed in, and changing it to signed-out would alter the user's active local session. The alternate local address is mapped to an unrelated component preview, so it cannot provide equivalent evidence.
+- `npm run test:smoke` passed, including notes, folders, tasks, and second-device synchronization.
+- `git diff --check` passed.
 
 ## Final result
 
-blocked
+passed

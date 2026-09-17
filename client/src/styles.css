@@ -110,6 +110,8 @@
   .capture-card { padding:21px; }
   .task-editor { margin-top:7vh; }
   .task-document { padding-bottom:90px; }
+  .sidebar-utility { display:none; }
+  .mobile-header-controls { display:flex; align-items:center; gap:5px; }
 }
 
 /* A phone-sized in-app preview for reviewing the iOS layout from a desktop browser. */
@@ -148,4 +150,37 @@
   .auth input { min-height:48px; padding:11px 13px; font-size:16px; }
   .auth .primary { min-height:50px; font-size:1rem; }
   .link-button { min-height:40px; }
+}
+
+/* Desktop controls stay in the sidebar, leaving the note canvas deliberately quiet. */
+.mobile-header-controls { display:none; }
+.sidebar-utility { gap:8px; justify-content:flex-start; }
+.sidebar-utility .profile-switcher { width:auto; margin:0; }
+.sidebar-utility .theme-toggle { flex:0 0 auto; }
+.note-row { position:relative; padding:0; }
+.note-open { display:grid; grid-template-columns:minmax(0,1fr) auto; width:100%; gap:4px 8px; border:0; border-radius:8px; padding:11px; color:inherit; background:transparent; text-align:left; }
+.note-open strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.9rem; }
+.note-open span { grid-column:1/2; overflow:hidden; color:#959592; font-size:.78rem; text-overflow:ellipsis; white-space:nowrap; }
+.note-open time { grid-column:2; grid-row:1; padding-right:25px; color:#959592; font:400 .68rem 'DM Mono',monospace; }
+.note-menu-trigger { position:absolute; top:7px; right:6px; display:grid; place-items:center; width:28px; height:28px; border:0; border-radius:7px; color:#a9a9a6; background:transparent; opacity:0; transition:opacity .15s, background .15s; }
+.note-row:hover .note-menu-trigger, .note-menu-trigger[aria-expanded='true'] { opacity:1; }
+.note-menu-trigger:hover, .note-menu-trigger[aria-expanded='true'] { color:#f3f3ef; background:#41413f; }
+.note-menu { position:absolute; z-index:8; top:39px; right:5px; display:grid; min-width:190px; overflow:hidden; border:1px solid #454542; border-radius:10px; padding:5px; background:#282827; box-shadow:0 16px 38px #00000066; }
+.note-menu > button, .folder-menu-list button { display:flex; align-items:center; gap:8px; width:100%; border:0; border-radius:7px; padding:9px 10px; color:#e5e5e1; background:transparent; text-align:left; font:600 .75rem Manrope,Arial,sans-serif; }
+.note-menu > button > svg:last-child { margin-left:auto; color:#9d9d99; }
+.note-menu > button:hover, .folder-menu-list button:hover { background:#393937; }
+.note-menu > button.danger { color:#ffb6bb; }
+.note-menu > button.danger:hover { background:#482b2d; color:#ffd1d3; }
+.folder-menu-list { display:grid; gap:2px; max-height:150px; overflow:auto; margin:2px 0; border-top:1px solid #3e3e3c; border-bottom:1px solid #3e3e3c; padding:4px 0; }
+.folder-menu-list span { padding:8px 10px; color:#999995; font-size:.72rem; }
+@media (min-width:768px) {
+  .sidebar-utility { display:flex; }
+  .editor-head { justify-content:flex-start; }
+  .editor-head .mobile-sync, .editor-head .arc-spinner { display:none; }
+  .notes-view .editor .title, .notes-view .editor textarea, .notes-view .note-location { width:min(82%, 900px, calc(100% - 390px)); }
+}
+@media (max-width:767px) {
+  .mobile-header-controls { display:flex; align-items:center; gap:5px; }
+  .note-menu-trigger, .note-menu { display:none; }
+  .note-open time { padding-right:0; }
 }
