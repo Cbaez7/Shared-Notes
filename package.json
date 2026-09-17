@@ -1,0 +1,15 @@
+{
+  "name": "sharednotes",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": ["client", "server"],
+  "scripts": {
+    "dev": "concurrently -n server,client -c blue,magenta \"npm run dev -w server\" \"npm run dev -w client\"",
+    "build": "npm run build -w client && npm run build -w server",
+    "start": "npm run start -w server",
+    "test:smoke": "npm run test:smoke -w server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

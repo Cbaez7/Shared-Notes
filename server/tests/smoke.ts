@@ -1,0 +1,28 @@
+import assert from 'node:assert/strict';
+import { createServer } from 'node:http';
+import { once } from 'node:events';
+import { createApp } from '../src/app.js';
+import { createDatabase } from '../src/database.js';
+
+const server = createServer(createApp(createDatabase(':memory:')));
+server.listen(0); await once(server, 'listening');
+const address = server.address();
+assert(address && typeof address !== 'string');
+const base = `http://127.0.0.1:${address.port}`;
+const email = `smoke-${Date.now()}@example.com`;
+const password = 'notes-test-password';
+const register = await fetch(`${base}/auth/register`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email, password }) });
+assert.equal(register.status, 201);
+const cookie = register.headers.getSetCookie()[0]?.split(';')[0]; assert(cookie);
+await fetch(`${base}/auth/logout`, { method: 'POST', headers: { cookie } });
+const login = await fetch(`${base}/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email, password }) });
+assert.equal(login.status, 200); const deviceOne = login.headers.getSetCookie()[0]?.split(';')[0]; assert(deviceOne);
+const noteId = crypto.randomUUID(); const created = await fetch(`${base}/notes/${noteId}`, { method: 'PUT', headers: { 'content-type': 'application/json', cookie: deviceOne }, body: JSON.stringify({ title: 'Shared thought', body: 'This crossed devices.', updated_at: new Date().toISOString() }) });
+assert.equal(created.status, 200); const saved = await created.json() as { updated_at: string };
+const secondDevice = await fetch(`${base}/notes?since=1970-01-01T00:00:00.000Z`, { headers: { cookie: deviceOne } });
+assert.equal(secondDevice.status, 200); const delta = await secondDevice.json() as { notes: Array<{ id: string; title: string }> };
+assert.equal(delta.notes.length, 1); assert.equal(delta.notes[0]?.id, noteId); assert.equal(delta.notes[0]?.title, 'Shared thought'); assert(saved.updated_at);
+const folderId = crypto.randomUUID(); const folder = await fetch(`${base}/folders/${folderId}`, { method: 'PUT', headers: { 'content-type': 'application/json', cookie: deviceOne }, body: JSON.stringify({ name: 'Projects', updated_at: new Date().toISOString() }) }); assert.equal(folder.status, 200);
+const taskId = crypto.randomUUID(); const subtaskId = crypto.randomUUID(); const task = await fetch(`${base}/tasks/${taskId}`, { method: 'PUT', headers: { 'content-type': 'application/json', cookie: deviceOne }, body: JSON.stringify({ title: 'Ship SharedNotes', completed: false, folder_id: folderId, note_id: noteId, subtasks: [{ id: subtaskId, title: 'Verify task detail', completed: false }], updated_at: new Date().toISOString() }) }); assert.equal(task.status, 200);
+const workspace = await fetch(`${base}/workspace?since=1970-01-01T00:00:00.000Z`, { headers: { cookie: deviceOne } }); const workspaceDelta = await workspace.json() as { folders: Array<{ id: string }>; tasks: Array<{ id: string; note_id: string | null; subtasks: Array<{ id: string }> }> }; assert.equal(workspace.status, 200); assert.equal(workspaceDelta.folders[0]?.id, folderId); assert.equal(workspaceDelta.tasks[0]?.id, taskId); assert.equal(workspaceDelta.tasks[0]?.note_id, noteId); assert.equal(workspaceDelta.tasks[0]?.subtasks[0]?.id, subtaskId);
+server.close(); await once(server, 'close'); console.log('Smoke test passed: notes, folders, tasks, and second-device sync.');
