@@ -18,6 +18,10 @@
   - Fix: mounted the menu above the pressed note outside the scroll container, and aligned leading icons/text/chevron. The added folder leading icon is mobile-only; desktop keeps its original compact menu composition.
 - [P2] Mobile retained a duplicate header create button and the bottom capture button always initiated note capture.
   - Fix: hid the mobile header button. The bottom control now opens a new note from Notes and a New Reminder dialog from To-do.
+- [P1] The revised swipe treatment stopped the note card from moving naturally while revealing its action rail.
+  - Fix: restored the smooth 82px left/right card translation, preserving the original red Delete and green Folder reveal animation with visible action icons.
+- [P2] The mobile Add to folder row retained an unnecessary trailing disclosure icon.
+  - Fix: removed that trailing icon at the mobile breakpoint only; the desktop menu remains unchanged.
 
 - [P1] Desktop search displayed the platform shortcut badge and the editor repeated the folder location.
   - Fix: hid the shortcut badge and canvas folder selector at the desktop breakpoint only.
@@ -33,7 +37,8 @@
 - Desktop capture confirms the search field no longer has a keyboard badge, Folder/Inbox is absent from the canvas, timestamps are right-aligned, and all note-menu icons share a consistent leading edge.
 - Mobile capture at 390 × 844 confirms the header add button is absent, the navigation capture action is context-aware, and the sync indicator is absent. The mobile folder selector remains intentionally available; the desktop-only canvas change does not leak to mobile.
 - Both swipe rails were exercised in the rendered browser: left exposed a red trash/Delete control and opened the confirmation dialog; right exposed a green Folder control and opened the folder picker. The no-folder state was also checked.
-- The mobile action menu opens above its selected note, with Share, Add to folder, and Delete icon/text rows aligned.
+- The restored swipe animation was compared directly at 390 × 844: the selected card now slides over a full semantic rail in the direction of the gesture, rather than being clipped in place. The Delete and Folder icons remain visible and centered in their rails.
+- The mobile action menu opens above its selected note, with Share, Add to folder, and Delete icon/text rows aligned; Add to folder has no trailing chevron on mobile.
 
 ## Fidelity surfaces
 
