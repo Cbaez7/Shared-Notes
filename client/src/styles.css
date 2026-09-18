@@ -236,16 +236,11 @@
   .editor-head .mobile-sync { display:none; }
   .mobile-nav { bottom:calc(4px + env(safe-area-inset-bottom)); }
   .app-identity .new-button { display:none; }
-  .note-row.swipe-delete { background:#6b3038; }
-  .note-row.swipe-folder { background:#245045; }
   .note-row.swipe-delete .mobile-swipe-action { opacity:1; background:#873741; }
   .note-row.swipe-folder .mobile-swipe-action { opacity:1; background:#28604f; }
   .note-row.swipe-delete .note-menu-trigger, .note-row.swipe-folder .note-menu-trigger { opacity:0; pointer-events:none; }
   .note-row { isolation:isolate; }
-  .note-row.swipe-delete::before, .note-row.swipe-folder::before { position:absolute; z-index:1; top:0; bottom:0; width:82px; content:""; }
-  .note-row.swipe-delete::before { right:0; background:#873741; }
-  .note-row.swipe-folder::before { left:0; background:#28604f; }
-  .mobile-swipe-action { z-index:1; background:transparent!important; transition:opacity .18s ease, background .18s ease; }
+  .mobile-swipe-action { z-index:1; background:transparent; transition:opacity .18s ease, background .18s ease; }
   .mobile-swipe-control { position:fixed; z-index:12; display:flex; align-items:center; justify-content:center; gap:5px; width:82px; border:0; color:#fff0f1; background:transparent; font:700 .67rem Manrope,Arial,sans-serif; }
   .mobile-swipe-control.delete svg { color:#ffd0d4; }
   .mobile-swipe-control.folder { left:0; color:#d7f4e8; }
