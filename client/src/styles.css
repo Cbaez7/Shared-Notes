@@ -198,6 +198,7 @@
 @media (max-width:767px) {
   .mobile-header-controls { display:none!important; }
   .sidebar .sidebar-utility { display:none!important; }
+  .note-list { overflow-x:hidden; overflow-y:auto; }
   .note-menu-trigger { z-index:2; top:31px; display:grid; opacity:1; }
   .note-menu { z-index:3; top:62px; display:grid; min-width:202px; }
   .note-row { overflow:visible; }
@@ -206,7 +207,7 @@
   .note-row.swipe-delete .note-open { transform:translateX(-82px); }
   .note-row.swipe-folder .note-open { transform:translateX(82px); }
   .mobile-swipe-action { position:absolute; z-index:0; inset:0; display:flex; align-items:stretch; pointer-events:none; overflow:hidden; border-radius:8px; }
-  .mobile-swipe-action.delete { justify-content:flex-end; background:#652f35; }
+  .mobile-swipe-action.delete-action { justify-content:flex-end; background:#652f35; }
   .mobile-swipe-action.folder { justify-content:flex-start; background:#244c43; }
   .mobile-swipe-action button { display:flex; align-items:center; justify-content:center; gap:5px; width:82px; border:0; color:#fff; background:transparent; font:700 .67rem Manrope,Arial,sans-serif; pointer-events:auto; }
   .mobile-swipe-action.delete button { color:#ffdfe1; }
@@ -241,10 +242,6 @@
   .note-row.swipe-delete .note-menu-trigger, .note-row.swipe-folder .note-menu-trigger { opacity:0; pointer-events:none; }
   .note-row { isolation:isolate; }
   .mobile-swipe-action { z-index:1; background:transparent; transition:opacity .18s ease, background .18s ease; }
-  .mobile-swipe-control { position:fixed; z-index:12; display:flex; align-items:center; justify-content:center; gap:5px; width:82px; border:0; color:#fff0f1; background:transparent; font:700 .67rem Manrope,Arial,sans-serif; }
-  .mobile-swipe-control.delete svg { color:#ffd0d4; }
-  .mobile-swipe-control.folder { left:0; color:#d7f4e8; }
-  .mobile-swipe-control.folder svg { color:#cff5e4; }
   .note-open { z-index:2; }
   .note-menu-trigger { z-index:3; }
   .note-menu { top:auto; bottom:calc(100% - 10px); z-index:5; }

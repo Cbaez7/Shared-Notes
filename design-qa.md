@@ -24,6 +24,8 @@
   - Fix: removed that trailing icon at the mobile breakpoint only; the desktop menu remains unchanged.
 - [P1] The restored swipe animation still painted the row itself as well as the reveal layer, leaving a duplicate color strip on the opposite edge.
   - Fix: the note row is now transparent during the gesture. Only the action layer is colored, so Folder exposes one left rail and Delete exposes one right rail.
+- [P1] Swipe labels were mounted in a fixed screen layer, so they could drift into another note; the Delete layer also inherited a generic 36px control style.
+  - Fix: action buttons now live inside their own swipe row, and the Delete rail has an isolated class. The note list clips horizontal overflow, keeping both rails inside the viewport.
 
 - [P1] Desktop search displayed the platform shortcut badge and the editor repeated the folder location.
   - Fix: hid the shortcut badge and canvas folder selector at the desktop breakpoint only.
@@ -41,6 +43,7 @@
 - Both swipe rails were exercised in the rendered browser: left exposed a red trash/Delete control and opened the confirmation dialog; right exposed a green Folder control and opened the folder picker. The no-folder state was also checked.
 - The restored swipe animation was compared directly at 390 × 844: the selected card now slides over a full semantic rail in the direction of the gesture, rather than being clipped in place. The Delete and Folder icons remain visible and centered in their rails.
 - A follow-up mobile capture confirms the reveal has no opposite-edge color artifact: Folder has one clean green left rail; Delete has one clean red right rail.
+- Final mobile capture confirms Folder and Delete stay vertically aligned with the note that produced them, including after the list moves; there is no horizontal scrollbar.
 - The mobile action menu opens above its selected note, with Share, Add to folder, and Delete icon/text rows aligned; Add to folder has no trailing chevron on mobile.
 
 ## Fidelity surfaces

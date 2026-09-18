@@ -67,7 +67,7 @@ export default function App() {
   const [folderMenuId, setFolderMenuId] = useState<string | null>(null);
   const [noteMenuPosition, setNoteMenuPosition] = useState<{ top: number; right: number } | null>(null);
   const [copiedNoteId, setCopiedNoteId] = useState<string | null>(null);
-  const [mobileSwipeAction, setMobileSwipeAction] = useState<{ id: string; action: 'folder' | 'delete'; top: number; left: number; right: number; height: number } | null>(null);
+  const [mobileSwipeAction, setMobileSwipeAction] = useState<{ id: string; action: 'folder' | 'delete' } | null>(null);
   const [mobileFolderPickerNoteId, setMobileFolderPickerNoteId] = useState<string | null>(null);
   const [mobileDeleteConfirmNoteId, setMobileDeleteConfirmNoteId] = useState<string | null>(null);
   const [taskCaptureOpen, setTaskCaptureOpen] = useState(false);
@@ -234,7 +234,7 @@ export default function App() {
     setNoteMenuId(null);
     setFolderMenuId(null);
     setNoteMenuPosition(null);
-    setMobileSwipeAction({ id: note.id, action: dx > 0 ? 'folder' : 'delete', top: gesture.swipeTop, left: gesture.left, right: gesture.right, height: gesture.height });
+    setMobileSwipeAction({ id: note.id, action: dx > 0 ? 'folder' : 'delete' });
   };
   const openNote = (note: Note) => {
     if (suppressNoteOpen.current) { suppressNoteOpen.current = false; return; }
@@ -291,12 +291,11 @@ export default function App() {
         const swipe = mobileSwipeAction?.id === note.id ? mobileSwipeAction : null;
         const swipeAction = swipe?.action ?? null;
         return <article key={note.id} className={`note-row ${note.id === activeId ? 'selected' : ''} ${swipeAction ? `swipe-${swipeAction}` : ''}`}>
-          {swipeAction && <div className={`mobile-swipe-action ${swipeAction}`} aria-hidden="true" />}
-          {swipe && createPortal(<button className={`mobile-swipe-control ${swipe.action}`} type="button" style={swipe.action === 'delete' ? { top: swipe.top, right: swipe.right, height: swipe.height } : { top: swipe.top, left: swipe.left, height: swipe.height }} onClick={() => {
+          {swipeAction && <div className={`mobile-swipe-action ${swipeAction === 'delete' ? 'delete-action' : 'folder'}`}><button type="button" onClick={() => {
             setMobileSwipeAction(null);
-            if (swipe.action === 'delete') setMobileDeleteConfirmNoteId(note.id);
+            if (swipeAction === 'delete') setMobileDeleteConfirmNoteId(note.id);
             else setMobileFolderPickerNoteId(note.id);
-          }}>{swipe.action === 'delete' ? <><Trash2 size={15} />Delete</> : <><FolderIcon size={15} />Folder</>}</button>, document.body)}
+          }}>{swipeAction === 'delete' ? <><Trash2 size={15} />Delete</> : <><FolderIcon size={15} />Folder</>}</button></div>}
           <button className="note-open" onPointerDown={(event) => startNotePress(note, event)} onPointerUp={(event) => finishNotePress(note, event)} onPointerCancel={cancelNotePress} onClick={() => openNote(note)}><strong>{noteTitle(note)}</strong><span>{excerpt(note)}</span><time>{relativeTime(note.updated_at)}</time></button>
           <button className="note-menu-trigger" data-note-actions type="button" aria-label={`Open actions for ${noteTitle(note)}`} aria-expanded={noteMenuId === note.id} onClick={(event) => { const bounds = event.currentTarget.closest('.note-row')?.getBoundingClientRect(); const isMobile = window.matchMedia('(max-width: 767px)').matches; setMobileSwipeAction(null); setNoteMenuId((current) => current === note.id ? null : note.id); setFolderMenuId(null); setNoteMenuPosition(isMobile && bounds ? { top: bounds.top + 8, right: window.innerWidth - bounds.right } : null); }}><MoreHorizontal size={16} /></button>
           {noteMenuId === note.id && window.matchMedia('(max-width: 767px)').matches && noteMenuPosition ? createPortal(renderNoteActions(note, true), document.body) : noteMenuId === note.id ? renderNoteActions(note) : null}
