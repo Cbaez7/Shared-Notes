@@ -219,3 +219,27 @@
 @media (prefers-reduced-motion:reduce) {
   .note-open, .mobile-nav, .mobile-nav button, .copy-toast { transition:none; animation:none; }
 }
+
+/* Desktop-only canvas and sidebar refinements. */
+@media (min-width:768px) {
+  .sidebar .search kbd { display:none; }
+  .notes-view .note-location { display:none; }
+  .notes-view .editor .title { margin-top:42px; }
+  .note-open time { padding-right:0; text-align:right; }
+  .note-menu > button > svg:last-child { margin-left:0; }
+  .note-menu > button > svg.menu-chevron { margin-left:auto; color:#9d9d99; }
+}
+
+/* Mobile-only touch feedback and note-canvas cleanup. */
+@media (max-width:767px) {
+  .editor-head .mobile-sync { display:none; }
+  .mobile-nav { bottom:calc(4px + env(safe-area-inset-bottom)); }
+  .note-row.swipe-delete { background:#6b3038; }
+  .note-row.swipe-folder { background:#245045; }
+  .note-row.swipe-delete .mobile-swipe-action { opacity:1; background:#6b3038; }
+  .note-row.swipe-folder .mobile-swipe-action { opacity:1; background:#245045; }
+  .mobile-swipe-action { transition:opacity .18s ease, background .18s ease; }
+  .mobile-swipe-action.delete button { color:#fff0f1; }
+  .mobile-swipe-action.delete button svg { color:#ffd0d4; }
+  .mobile-swipe-action.folder button svg { color:#cff5e4; }
+}

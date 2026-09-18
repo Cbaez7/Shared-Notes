@@ -1,8 +1,8 @@
-# Design QA — Note actions and mobile navigation
+# Design QA — Desktop and mobile layout polish
 
 ## Comparison target
 
-- Source visual truth: [codex-clipboard-07d16ce6-8736-4007-81fb-884cd0dbd282.png](C:\Users\emper\AppData\Local\Temp\codex-clipboard-07d16ce6-8736-4007-81fb-884cd0dbd282.png), 469 × 216 pixels. It establishes the dark sidebar note-row and overflow-menu treatment.
+- Source visual truth: the supplied desktop search, note-list, canvas, and note-menu screenshots, plus the mobile swipe and canvas requirements.
 - Implementation evidence: browser-rendered local production preview at `http://localhost:5174/`.
   - Desktop: 1440 × 900 CSS pixels, DPR 1, authenticated note-list and open-menu states.
   - Mobile: 390 × 844 CSS pixels, DPR 1, authenticated note-list and bottom-navigation states.
@@ -10,29 +10,26 @@
 
 ## Findings and fixes
 
-- [P1] Desktop overflow menus remained open when users clicked elsewhere.
-  - Fix: document-level pointer handling now dismisses the menu and its folder chooser on any outside click; Escape also clears them.
-- [P1] The three-dot control competed with the timestamp.
-  - Fix: placed it on the line below the timestamp on desktop and mobile.
-- [P1] Notes had no sharing affordance.
-  - Fix: added Share note, which currently copies the title and full note body to the clipboard and confirms the result with a toast.
-- [P1] Mobile lacked note-level action access and retained desktop utility controls.
-  - Fix: added mobile overflow menus and long-press access; swipe-left reveals a Delete action and swipe-right reveals a Folder action. Removed the mobile avatar/theme controls.
-- [P2] The mobile capture control floated above the other navigation controls and nav labels made the bar too busy.
-  - Fix: aligned the centered capture control with its peers, made the navigation icon-only, and added press/transition motion.
+- [P1] Desktop search displayed the platform shortcut badge and the editor repeated the folder location.
+  - Fix: hid the shortcut badge and canvas folder selector at the desktop breakpoint only.
+- [P1] The desktop note timestamp and overflow action needed a clearer vertical relationship, while menu icons were inconsistently aligned.
+  - Fix: right-aligned the time, retained the ellipsis below it, and aligned Share, folder, delete, and chevron icons within the menu.
+- [P1] Mobile swipe-left did not visibly communicate deletion and the canvas retained sync chrome.
+  - Fix: gave the Delete rail a persistent semantic-red surface and high-contrast trash icon while active; removed the mobile-only sync label/indicator.
+- [P2] The mobile navigation bar sat slightly too high.
+  - Fix: lowered it within the safe area without changing desktop positioning.
 
 ## Visual verification
 
-- Full view: desktop and mobile browser captures show the dark workspace, compact note rows, and a balanced icon-only mobile navigation bar.
-- Focused region: the desktop open-menu capture confirms Share note, Add to folder, and Delete note; the ellipsis sits below the timestamp. Clicking outside the menu removed it in the rendered browser.
-- Mobile capture confirms the overflow controls remain available, avatar/theme controls are absent, and the central capture icon shares the same baseline as the other icons.
-- Gesture note: browser automation provides mouse dragging rather than a touch pointer, so swipe and long-press were verified from their rendered action surfaces and pointer-event implementation; device-touch behavior remains a final on-device check.
+- Desktop capture confirms the search field no longer has a keyboard badge, Folder/Inbox is absent from the canvas, timestamps are right-aligned, and all note-menu icons share a consistent leading edge.
+- Mobile capture at 390 × 844 confirms the sync indicator is absent and the icon-only navigation sits lower at the bottom safe area. The mobile folder selector remains intentionally available; the desktop-only canvas change does not leak to mobile.
+- Gesture note: browser automation exposes mouse rather than touch pointers, so the active delete/folder rails were verified from the rendered CSS and pointer-event implementation. A physical-phone swipe is the final device-level confirmation.
 
 ## Fidelity surfaces
 
 - Fonts and typography: existing Manrope and DM Mono treatment is retained; compact menu and time typography preserve the reference hierarchy.
-- Spacing and layout rhythm: the timestamp/ellipsis stack, menu spacing, touch-action rail width, and nav baseline were reviewed at their target breakpoints.
-- Colors and visual tokens: the existing neutral dark surfaces remain intact; destructive and folder swipe rails use restrained semantic red and green.
+- Spacing and layout rhythm: timestamp/ellipsis stacking, menu icon columns, and the mobile nav baseline were reviewed at their target breakpoints.
+- Colors and visual tokens: the existing neutral dark surfaces remain intact; destructive and folder swipe rails use distinct semantic red and green.
 - Image quality and asset fidelity: no raster assets are part of this interaction target; existing Lucide controls are used consistently with the product.
 - Copy and content: menu wording is explicit—Share note, Add to folder, Remove from folder when applicable, and Delete note.
 
@@ -45,7 +42,7 @@
 
 ## Follow-up polish
 
-- Test long-press and swipe thresholds on a physical iPhone after deployment; no blocking visual or functional issue is known.
+- Test the swipe threshold on a physical iPhone after deployment; no blocking visual or functional issue is known.
 
 ## Final result
 
