@@ -167,6 +167,7 @@
 .note-menu-trigger:hover, .note-menu-trigger[aria-expanded='true'] { color:#f3f3ef; background:#41413f; }
 .note-menu { position:absolute; z-index:8; top:39px; right:5px; display:grid; min-width:190px; overflow:hidden; border:1px solid #454542; border-radius:10px; padding:5px; background:#282827; box-shadow:0 16px 38px #00000066; }
 .note-menu > button, .folder-menu-list button { display:flex; align-items:center; gap:8px; width:100%; border:0; border-radius:7px; padding:9px 10px; color:#e5e5e1; background:transparent; text-align:left; font:600 .75rem Manrope,Arial,sans-serif; }
+.menu-folder-icon { display:none; }
 .note-menu > button > svg:last-child { margin-left:auto; color:#9d9d99; }
 .note-menu > button:hover, .folder-menu-list button:hover { background:#393937; }
 .note-menu > button.danger { color:#ffb6bb; }
@@ -234,12 +235,48 @@
 @media (max-width:767px) {
   .editor-head .mobile-sync { display:none; }
   .mobile-nav { bottom:calc(4px + env(safe-area-inset-bottom)); }
+  .app-identity .new-button { display:none; }
   .note-row.swipe-delete { background:#6b3038; }
   .note-row.swipe-folder { background:#245045; }
-  .note-row.swipe-delete .mobile-swipe-action { opacity:1; background:#6b3038; }
-  .note-row.swipe-folder .mobile-swipe-action { opacity:1; background:#245045; }
-  .mobile-swipe-action { transition:opacity .18s ease, background .18s ease; }
+  .note-row.swipe-delete .mobile-swipe-action { opacity:1; background:#873741; }
+  .note-row.swipe-folder .mobile-swipe-action { opacity:1; background:#28604f; }
+  .note-row.swipe-delete .note-menu-trigger, .note-row.swipe-folder .note-menu-trigger { opacity:0; pointer-events:none; }
+  .note-row { isolation:isolate; }
+  .note-row.swipe-delete::before, .note-row.swipe-folder::before { position:absolute; z-index:1; top:0; bottom:0; width:82px; content:""; }
+  .note-row.swipe-delete::before { right:0; background:#873741; }
+  .note-row.swipe-folder::before { left:0; background:#28604f; }
+  .mobile-swipe-action { z-index:3; background:transparent!important; transition:opacity .18s ease, background .18s ease; }
+  .mobile-swipe-action button { position:absolute!important; z-index:999!important; top:0!important; right:0!important; bottom:0!important; display:flex!important; width:82px!important; opacity:1!important; visibility:visible!important; color:#fff0f1!important; background:transparent!important; }
+  .mobile-swipe-action button svg { display:block!important; flex:0 0 auto; color:#ffd0d4!important; }
+  .mobile-swipe-action.folder button { right:auto; left:0; }
+  .mobile-swipe-control { position:fixed; z-index:12; display:flex; align-items:center; justify-content:center; gap:5px; width:82px; border:0; color:#fff0f1; background:transparent; font:700 .67rem Manrope,Arial,sans-serif; }
+  .mobile-swipe-control.delete svg { color:#ffd0d4; }
+  .mobile-swipe-control.folder { left:0; color:#d7f4e8; }
+  .mobile-swipe-control.folder svg { color:#cff5e4; }
+  .note-open { z-index:2; }
+  .note-menu-trigger { z-index:3; }
+  .note-row.swipe-delete .note-open { transform:none; clip-path:inset(0 82px 0 0); }
+  .note-row.swipe-folder .note-open { transform:none; clip-path:inset(0 0 0 82px); }
   .mobile-swipe-action.delete button { color:#fff0f1; }
   .mobile-swipe-action.delete button svg { color:#ffd0d4; }
   .mobile-swipe-action.folder button svg { color:#cff5e4; }
+  .note-menu { top:auto; bottom:calc(100% - 10px); z-index:5; }
+  .note-menu.mobile-floating-menu { position:fixed; z-index:20; bottom:auto; transform:translateY(-100%); }
+  .note-menu > button > svg:last-child { margin-left:0; }
+  .note-menu > button > svg.menu-chevron { margin-left:auto; color:#9d9d99; }
+  .note-menu .menu-folder-icon { display:block; }
+  .mobile-action-card { width:min(100%, 390px); }
+  .mobile-action-card > p { margin:0; padding:0 24px 20px; color:#aaa9a5; font-size:.86rem; line-height:1.5; }
+  .mobile-action-options { display:grid; gap:5px; padding:3px 16px 16px; }
+  .mobile-action-options > button { display:flex; align-items:center; gap:10px; width:100%; border:0; border-radius:9px; padding:12px; color:#e9e9e5; background:#343432; text-align:left; font:700 .86rem Manrope,Arial,sans-serif; }
+  .mobile-action-options > button:active { background:#454542; }
+  .mobile-action-options > button svg { color:#b8b8b4; }
+  .mobile-action-options > p { margin:2px 8px; color:#aaa9a5; font-size:.82rem; line-height:1.5; }
+  .mobile-action-card footer, .mobile-task-capture footer { display:flex; justify-content:flex-end; gap:8px; padding:14px 24px 20px; }
+  .mobile-action-card footer button, .mobile-task-capture footer button { border:0; border-radius:8px; padding:9px 12px; color:#c9c9c5; background:transparent; font:700 .78rem Manrope,Arial,sans-serif; }
+  .delete-confirmation footer .delete-confirm-button { color:#fff4f4; background:#b5454d; }
+  .mobile-task-capture { display:grid; gap:14px; padding:4px 24px 4px; }
+  .mobile-task-capture input { width:100%; box-sizing:border-box; border:1px solid #474743; border-radius:9px; padding:12px; color:#f0f0eb; background:#20201f; font-size:16px; }
+  .mobile-task-capture footer { padding:0 0 16px; }
+  .mobile-task-capture footer .primary { color:#20201f; background:#ecece8; }
 }

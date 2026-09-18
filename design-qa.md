@@ -1,14 +1,23 @@
-# Design QA — Desktop and mobile layout polish
+# Design QA — Mobile note actions and capture
 
 ## Comparison target
 
-- Source visual truth: the supplied desktop search, note-list, canvas, and note-menu screenshots, plus the mobile swipe and canvas requirements.
+- Source visual truth: the supplied mobile delete-swipe, note-action menu, and compact-header screenshots.
 - Implementation evidence: browser-rendered local production preview at `http://localhost:5174/`.
   - Desktop: 1440 × 900 CSS pixels, DPR 1, authenticated note-list and open-menu states.
   - Mobile: 390 × 844 CSS pixels, DPR 1, authenticated note-list and bottom-navigation states.
 - Normalization: the supplied image is a focused sidebar crop, so the comparison used the same note-row/menu region rather than browser chrome or unrelated canvas space.
 
 ## Findings and fixes
+
+- [P1] The delete swipe showed a colored rail but its action icon was obscured by the note controls.
+  - Fix: the revealed Delete/Folder controls now mount in their own fixed interaction layer, with visible Lucide icons and high-contrast semantic rails.
+- [P1] Swipe actions routed into the long-press dropdown instead of a focused follow-up action.
+  - Fix: swiping left opens a deletion confirmation; swiping right opens a folder picker. These dialogs remain on the notes surface and never change tabs.
+- [P1] The mobile long-press menu could be clipped by the scrolling note list and had inconsistent icon/text columns.
+  - Fix: mounted the menu above the pressed note outside the scroll container, and aligned leading icons/text/chevron. The added folder leading icon is mobile-only; desktop keeps its original compact menu composition.
+- [P2] Mobile retained a duplicate header create button and the bottom capture button always initiated note capture.
+  - Fix: hid the mobile header button. The bottom control now opens a new note from Notes and a New Reminder dialog from To-do.
 
 - [P1] Desktop search displayed the platform shortcut badge and the editor repeated the folder location.
   - Fix: hid the shortcut badge and canvas folder selector at the desktop breakpoint only.
@@ -22,8 +31,9 @@
 ## Visual verification
 
 - Desktop capture confirms the search field no longer has a keyboard badge, Folder/Inbox is absent from the canvas, timestamps are right-aligned, and all note-menu icons share a consistent leading edge.
-- Mobile capture at 390 × 844 confirms the sync indicator is absent and the icon-only navigation sits lower at the bottom safe area. The mobile folder selector remains intentionally available; the desktop-only canvas change does not leak to mobile.
-- Gesture note: browser automation exposes mouse rather than touch pointers, so the active delete/folder rails were verified from the rendered CSS and pointer-event implementation. A physical-phone swipe is the final device-level confirmation.
+- Mobile capture at 390 × 844 confirms the header add button is absent, the navigation capture action is context-aware, and the sync indicator is absent. The mobile folder selector remains intentionally available; the desktop-only canvas change does not leak to mobile.
+- Both swipe rails were exercised in the rendered browser: left exposed a red trash/Delete control and opened the confirmation dialog; right exposed a green Folder control and opened the folder picker. The no-folder state was also checked.
+- The mobile action menu opens above its selected note, with Share, Add to folder, and Delete icon/text rows aligned.
 
 ## Fidelity surfaces
 
@@ -37,12 +47,12 @@
 
 - `npm run build` passed.
 - `npm run test:smoke` passed, including notes, folders, tasks, and second-device synchronization.
-- Browser console check: no errors in the local rendered preview.
+- Browser interactions passed without application errors. One browser-automation-only `prompt()` limitation was logged when attempting the existing native folder-creation prompt; it is not part of the updated swipe/menu/capture flow.
 - `git diff --check` passed.
 
 ## Follow-up polish
 
-- Test the swipe threshold on a physical iPhone after deployment; no blocking visual or functional issue is known.
+- Test the swipe threshold and native folder-creation prompt on a physical iPhone after deployment; no blocking visual or functional issue is known.
 
 ## Final result
 
