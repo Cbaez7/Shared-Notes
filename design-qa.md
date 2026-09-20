@@ -20,6 +20,8 @@
 
 - [P1] The first desktop pass applied the inset-window treatment to the left navigation as well as the workspace.
   - Fix: restored the navigation as a full-height menu surface and constrained the rounded border, dark outer gutter, and elevation to the editor/reminders canvas on the right.
+- [P1] The editor frame still left a black gutter at the right and bottom edges, while the sidebar could shift its account controls during long-list scrolling.
+  - Fix: matched the surrounding canvas to the menu surface, extended the right workspace flush to the right/bottom edge, and constrained scrolling to the note/task list so the account and theme controls remain pinned in the sidebar footer.
 
 - [P1] The delete swipe showed a colored rail but its action icon was obscured by the note controls.
   - Fix: the revealed Delete/Folder controls now mount in their own fixed interaction layer, with visible Lucide icons and high-contrast semantic rails.
@@ -50,6 +52,7 @@
 ## Visual verification
 
 - Desktop frame capture confirms the corrected composition: the rounded, bordered surface is limited to the right workspace, while the left navigation stays outside it and the original Notes/To-do navigation remains intact.
+- Desktop sidebar scroll capture confirms the note list scrolls independently while the avatar and appearance toggle stay fixed in the footer; the workspace reaches the right and bottom viewport edges without a contrasting gutter.
 - Desktop capture confirms the search field no longer has a keyboard badge, Folder/Inbox is absent from the canvas, timestamps are right-aligned, and all note-menu icons share a consistent leading edge.
 - Mobile capture at 390 × 844 confirms the header add button is absent, the navigation capture action is context-aware, and the sync indicator is absent. The mobile folder selector remains intentionally available; the desktop-only canvas change does not leak to mobile.
 - Both swipe rails were exercised in the rendered browser: left exposed a red trash/Delete control and opened the confirmation dialog; right exposed a green Folder control and opened the folder picker. The no-folder state was also checked.
