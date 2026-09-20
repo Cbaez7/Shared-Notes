@@ -26,6 +26,8 @@
   - Fix: removed the top edge while preserving the rounded left-side transition and the existing header divider inside the workspace.
 - [P2] The sidebar divider remained visible beside the rounded workspace.
   - Fix: removed the desktop sidebar's right border so the menu surface transitions directly into the workspace gutter.
+- [P2] The sidebar scrollbar used the browser default, which was too bright and remained visible when idle; the installed app title bar also retained its earlier blue theme.
+  - Fix: introduced a 6px menu-colored scrollbar thumb that fades in only during list scrolling, and aligned the PWA theme/background colors with the menu charcoal.
 
 - [P1] The delete swipe showed a colored rail but its action icon was obscured by the note controls.
   - Fix: the revealed Delete/Folder controls now mount in their own fixed interaction layer, with visible Lucide icons and high-contrast semantic rails.

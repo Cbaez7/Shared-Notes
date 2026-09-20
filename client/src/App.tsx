@@ -79,9 +79,11 @@ export default function App() {
   const tasksRef = useRef<Task[]>([]);
   const syncTimer = useRef<number | undefined>();
   const noteBodyRef = useRef<HTMLTextAreaElement | null>(null);
+  const sidebarScrollTimer = useRef<number | undefined>();
   const notePressTimer = useRef<number | undefined>();
   const noteGesture = useRef<{ id: string; x: number; y: number; top: number; left: number; right: number; swipeTop: number; height: number } | null>(null);
   const suppressNoteOpen = useRef(false);
+  const [sidebarScrolling, setSidebarScrolling] = useState(false);
   useEffect(() => { notesRef.current = notes; }, [notes]);
   useEffect(() => { foldersRef.current = folders; }, [folders]);
   useEffect(() => { tasksRef.current = tasks; }, [tasks]);
@@ -273,6 +275,7 @@ export default function App() {
   const removeReminderSubtask = (task: Task, subtaskId: string) => updateTask({ ...task, subtasks: task.subtasks.filter((subtask) => subtask.id !== subtaskId) });
   const addReminderSubtask = (task: Task) => { if (!reminderSubtaskInput.trim()) return; updateTask({ ...task, subtasks: [...task.subtasks, { id: crypto.randomUUID(), title: reminderSubtaskInput.trim(), completed: false }] }); setReminderSubtaskInput(''); };
   const openTask = (taskId: string) => { setView('tasks'); setTaskDetailId(taskId); setMobileEditor(true); };
+  const handleSidebarScroll = () => { setSidebarScrolling(true); window.clearTimeout(sidebarScrollTimer.current); sidebarScrollTimer.current = window.setTimeout(() => setSidebarScrolling(false), 650); };
   const renderNoteActions = (note: Note, mobileFloating = false) => <div className={`note-menu${mobileFloating ? ' mobile-floating-menu' : ''}`} data-note-actions role="menu" style={mobileFloating && noteMenuPosition ? { top: noteMenuPosition.top, right: noteMenuPosition.right } : undefined}>
     <button type="button" role="menuitem" onClick={() => void shareNote(note)}><Share2 size={14} />Share note</button>
     <button type="button" role="menuitem" onClick={() => setFolderMenuId((current) => current === note.id ? null : note.id)}><FolderIcon className="menu-folder-icon" size={14} />Add to folder <ChevronRight className="menu-chevron" size={14} /></button>
@@ -287,7 +290,7 @@ export default function App() {
       <button className="search compact-ask" onClick={() => setCommandOpen(true)} aria-label="Open note search" aria-keyshortcuts="Control+K Meta+K"><Search size={16} /><span className="search-label">Search {view === 'notes' ? 'notes' : 'tasks'}</span><kbd>⌘K</kbd></button>
       <div className="workspace-tabs"><button className={view === 'notes' ? 'active' : ''} onClick={() => { setView('notes'); setTaskDetailId(null); }}><FolderIcon size={14} />Notes</button><button className={view === 'tasks' ? 'active' : ''} onClick={() => { setView('tasks'); setTaskDetailId(null); setFolderId(null); }}><ListTodo size={14} />To-do</button></div>
       <nav className="folder-tree" aria-label="Folders"><div><span>Folders</span><button onClick={createFolder} aria-label="Create folder"><Plus size={14} /></button></div><button className={!folderId ? 'selected' : ''} onClick={() => setFolderId(null)}><FolderIcon size={15} />All {view === 'notes' ? 'notes' : 'tasks'}</button>{folders.filter((folder) => !folder.deleted_at).map((folder) => <button className={folder.id === folderId ? 'selected' : ''} key={folder.id} onClick={() => setFolderId(folder.id)}><FolderIcon size={15} />{folder.name}</button>)}</nav>
-      <div className="note-list">{view === 'notes' ? (visibleNotes.length ? visibleNotes.map((note) => {
+      <div className={`note-list${sidebarScrolling ? ' is-scrolling' : ''}`} onScroll={handleSidebarScroll}>{view === 'notes' ? (visibleNotes.length ? visibleNotes.map((note) => {
         const swipe = mobileSwipeAction?.id === note.id ? mobileSwipeAction : null;
         const swipeAction = swipe?.action ?? null;
         return <article key={note.id} className={`note-row ${note.id === activeId ? 'selected' : ''} ${swipeAction ? `swipe-${swipeAction}` : ''}`}>

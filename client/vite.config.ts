@@ -11,8 +11,8 @@ export default defineConfig({
         name: 'SharedNotes',
         short_name: 'Notes',
         description: 'Your notes, quietly in sync.',
-        theme_color: '#1d2742',
-        background_color: '#f7f8fc',
+        theme_color: '#181817',
+        background_color: '#181817',
         display: 'standalone',
         start_url: '/',
         icons: [

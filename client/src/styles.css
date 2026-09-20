@@ -282,7 +282,12 @@
     box-shadow:none;
   }
   .sidebar { height:100%; min-height:0; overflow:hidden; border-right:0; background:#181817; }
-  .sidebar .note-list { min-height:0; flex:1 1 auto; overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; }
+  .sidebar .note-list { min-height:0; flex:1 1 auto; overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin; scrollbar-color:transparent transparent; }
+  .sidebar .note-list::-webkit-scrollbar { width:6px; }
+  .sidebar .note-list::-webkit-scrollbar-track { background:transparent; }
+  .sidebar .note-list::-webkit-scrollbar-thumb { border:2px solid #181817; border-radius:999px; background:transparent; }
+  .sidebar .note-list.is-scrolling { scrollbar-color:#51514e transparent; }
+  .sidebar .note-list.is-scrolling::-webkit-scrollbar-thumb { background:#51514e; }
   .sidebar .sidebar-utility { flex:0 0 auto; margin-top:auto; }
   .editor {
     height:auto;
