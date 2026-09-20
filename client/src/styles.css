@@ -219,11 +219,23 @@
   .copy-toast { right:16px; bottom:calc(84px + env(safe-area-inset-bottom)); }
 }
 @media (prefers-reduced-motion:reduce) {
-  .note-open, .mobile-nav, .mobile-nav button, .copy-toast { transition:none; animation:none; }
+  .note-open, .mobile-nav, .mobile-nav button, .copy-toast, .quick-add-menu, .quick-add-menu > button { transition:none; animation:none; }
 }
 
 /* Desktop-only canvas and sidebar refinements. */
 @media (min-width:768px) {
+  .quick-add { position:relative; }
+  .quick-add-trigger[aria-expanded='true'] { color:#181817; background:#eeeee9; box-shadow:0 5px 16px #00000045; }
+  .quick-add-menu { position:absolute; z-index:30; top:calc(100% + 9px); right:0; display:grid; width:238px; gap:3px; border:1px solid #454541; border-radius:13px; padding:6px; background:#292927; box-shadow:0 18px 44px #00000070; transform-origin:top right; animation:quick-add-reveal .18s cubic-bezier(.2,.8,.2,1) both; }
+  .quick-add-menu > button { display:grid; grid-template-columns:30px minmax(0,1fr); align-items:center; gap:9px; width:100%; border:0; border-radius:9px; padding:9px; color:#e8e8e3; background:transparent; text-align:left; animation:quick-add-item .22s cubic-bezier(.2,.8,.2,1) both; }
+  .quick-add-menu > button:nth-child(2) { animation-delay:.025s; }
+  .quick-add-menu > button:nth-child(3) { animation-delay:.05s; }
+  .quick-add-menu > button:hover, .quick-add-menu > button:focus-visible { outline:0; background:#393937; }
+  .quick-add-menu > button:active { transform:scale(.98); }
+  .quick-add-icon { display:grid; place-items:center; width:30px; height:30px; border-radius:8px; color:#d8d8d3; background:#343432; }
+  .quick-add-menu > button > span:last-child { display:grid; min-width:0; gap:2px; }
+  .quick-add-menu strong { color:#f2f2ed; font:700 .79rem/1.2 Manrope,Arial,sans-serif; }
+  .quick-add-menu small { overflow:hidden; color:#9f9f9b; font:.66rem/1.2 Manrope,Arial,sans-serif; text-overflow:ellipsis; white-space:nowrap; }
   .sidebar .search kbd { display:none; }
   .notes-view .note-location { display:none; }
   .notes-view .editor .title { margin-top:42px; }
@@ -264,6 +276,9 @@
   .mobile-task-capture footer { padding:0 0 16px; }
   .mobile-task-capture footer .primary { color:#20201f; background:#ecece8; }
 }
+
+@keyframes quick-add-reveal { from { opacity:0; transform:translateY(-5px) scale(.96); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes quick-add-item { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
 
 /* Desktop-only frame: preserve the existing navigation surface, and present
    only the workspace canvas on the right as a quiet application window. */

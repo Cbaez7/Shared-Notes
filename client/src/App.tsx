@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Check, CheckCheck, ChevronLeft, ChevronRight, Circle, Clock3, Folder as FolderIcon, FolderOpen, ListTodo, MoreHorizontal, Plus, Search, Settings2, Share2, Trash2 } from 'lucide-react';
+import { Bell, Check, CheckCheck, ChevronLeft, ChevronRight, Circle, Clock3, FileText, Folder as FolderIcon, FolderOpen, FolderPlus, ListTodo, MoreHorizontal, Plus, Search, Settings2, Share2, Trash2 } from 'lucide-react';
 import { api, AuthError, ConflictError } from './api';
 import { localStore } from './db';
 import type { Folder, Note, SyncState, Task, User } from './types';
@@ -58,6 +58,7 @@ export default function App() {
   const [query, setQuery] = useState('');
   const [theme, setTheme] = useState<Theme>(preferredTheme);
   const [commandOpen, setCommandOpen] = useState(false);
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [captureOpen, setCaptureOpen] = useState(false);
   const [captureText, setCaptureText] = useState('');
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -79,6 +80,7 @@ export default function App() {
   const tasksRef = useRef<Task[]>([]);
   const syncTimer = useRef<number | undefined>();
   const noteBodyRef = useRef<HTMLTextAreaElement | null>(null);
+  const quickAddRef = useRef<HTMLDivElement | null>(null);
   const sidebarScrollTimer = useRef<number | undefined>();
   const notePressTimer = useRef<number | undefined>();
   const noteGesture = useRef<{ id: string; x: number; y: number; top: number; left: number; right: number; swipeTop: number; height: number } | null>(null);
@@ -156,8 +158,15 @@ export default function App() {
   useLayoutEffect(() => { const textarea = noteBodyRef.current; if (!textarea) return; textarea.style.height = 'auto'; textarea.style.height = `${textarea.scrollHeight}px`; }, [active?.body]);
   const noteTasks = useMemo(() => active ? parseTasks(active.body) : [], [active]);
   useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); setCommandOpen(true); } if (event.key === 'Escape') { setCommandOpen(false); setNoteMenuId(null); setFolderMenuId(null); setNoteMenuPosition(null); setMobileSwipeAction(null); } };
+    const onKeyDown = (event: KeyboardEvent) => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); setCommandOpen(true); } if (event.key === 'Escape') { setCommandOpen(false); setQuickAddOpen(false); setNoteMenuId(null); setFolderMenuId(null); setNoteMenuPosition(null); setMobileSwipeAction(null); } };
     window.addEventListener('keydown', onKeyDown); return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+  useEffect(() => {
+    const closeQuickAdd = (event: PointerEvent) => {
+      if (event.target instanceof Node && !quickAddRef.current?.contains(event.target)) setQuickAddOpen(false);
+    };
+    document.addEventListener('pointerdown', closeQuickAdd);
+    return () => document.removeEventListener('pointerdown', closeQuickAdd);
   }, []);
   useEffect(() => {
     if (!noteMenuId) return;
@@ -286,7 +295,7 @@ export default function App() {
   if (!user) return <AuthScreen onAuthenticated={setUser} theme={theme} onToggleTheme={toggleTheme} />;
   return <main className={`app ${mobileEditor ? 'editor-open' : ''} ${view === 'notes' ? 'notes-view' : ''} ${mobilePreview ? 'mobile-preview' : ''}`}>
     <aside className="sidebar">
-      <header className="app-identity"><button className="brand-button" onClick={() => { setView('notes'); setTaskDetailId(null); }}><FolderOpen size={18} /><h1>SharedNotes</h1></button><div className="header-actions"><span className="mobile-header-controls"><ThemeButton theme={theme} onToggle={toggleTheme} /><button className="profile-switcher" onClick={() => setSettingsOpen(true)} aria-label={`Open account settings for ${user.email}`} title={user.email}><b>{user.email.slice(0, 1).toUpperCase()}</b></button></span><button className="new-button" onClick={createNote} aria-label="Create note"><Plus size={17} /></button></div></header>
+      <header className="app-identity"><button className="brand-button" onClick={() => { setView('notes'); setTaskDetailId(null); }}><FolderOpen size={18} /><h1>SharedNotes</h1></button><div className="header-actions"><span className="mobile-header-controls"><ThemeButton theme={theme} onToggle={toggleTheme} /><button className="profile-switcher" onClick={() => setSettingsOpen(true)} aria-label={`Open account settings for ${user.email}`} title={user.email}><b>{user.email.slice(0, 1).toUpperCase()}</b></button></span><div className="quick-add" ref={quickAddRef}><button className="new-button quick-add-trigger" onClick={() => setQuickAddOpen((open) => !open)} aria-label="Create something new" aria-haspopup="menu" aria-expanded={quickAddOpen}><Plus size={17} /></button>{quickAddOpen && <div className="quick-add-menu" role="menu" aria-label="Create something new"><button type="button" role="menuitem" onClick={() => { setQuickAddOpen(false); createNote(); }}><span className="quick-add-icon"><FileText size={16} /></span><span><strong>New note</strong><small>Start writing right away</small></span></button><button type="button" role="menuitem" onClick={() => { setQuickAddOpen(false); setTaskCaptureOpen(true); }}><span className="quick-add-icon"><Bell size={16} /></span><span><strong>New reminder</strong><small>Keep something on your list</small></span></button><button type="button" role="menuitem" onClick={() => { setQuickAddOpen(false); createFolder(); }}><span className="quick-add-icon"><FolderPlus size={16} /></span><span><strong>New folder</strong><small>Organize related notes</small></span></button></div>}</div></div></header>
       <button className="search compact-ask" onClick={() => setCommandOpen(true)} aria-label="Open note search" aria-keyshortcuts="Control+K Meta+K"><Search size={16} /><span className="search-label">Search {view === 'notes' ? 'notes' : 'tasks'}</span><kbd>⌘K</kbd></button>
       <div className="workspace-tabs"><button className={view === 'notes' ? 'active' : ''} onClick={() => { setView('notes'); setTaskDetailId(null); }}><FolderIcon size={14} />Notes</button><button className={view === 'tasks' ? 'active' : ''} onClick={() => { setView('tasks'); setTaskDetailId(null); setFolderId(null); }}><ListTodo size={14} />To-do</button></div>
       <nav className="folder-tree" aria-label="Folders"><div><span>Folders</span><button onClick={createFolder} aria-label="Create folder"><Plus size={14} /></button></div><button className={!folderId ? 'selected' : ''} onClick={() => setFolderId(null)}><FolderIcon size={15} />All {view === 'notes' ? 'notes' : 'tasks'}</button>{folders.filter((folder) => !folder.deleted_at).map((folder) => <button className={folder.id === folderId ? 'selected' : ''} key={folder.id} onClick={() => setFolderId(folder.id)}><FolderIcon size={15} />{folder.name}</button>)}</nav>
