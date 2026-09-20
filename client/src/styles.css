@@ -265,23 +265,31 @@
   .mobile-task-capture footer .primary { color:#20201f; background:#ecece8; }
 }
 
-/* Desktop-only frame: preserve the existing Notes and To-do workspace, but
-   present it as one quiet application window above the darker page backdrop. */
+/* Desktop-only frame: preserve the existing navigation surface, and present
+   only the workspace canvas on the right as a quiet application window. */
 @media (min-width:768px) {
   html { min-height:100%; background:#111110; }
-  body { height:100dvh; min-height:0; overflow:hidden; padding:18px; background:#111110; }
+  body { height:100dvh; min-height:0; overflow:hidden; padding:0; background:#111110; }
   #root { height:100%; min-height:0; }
   .app, .app.notes-view {
-    width:min(100%, 1536px);
-    height:calc(100dvh - 36px);
-    margin:0 auto;
+    width:100%;
+    height:100dvh;
+    margin:0;
     overflow:hidden;
-    border:1px solid #3d3d3a;
-    border-radius:17px;
-    background:#1e1e1d;
-    box-shadow:0 24px 72px #00000070, 0 0 0 1px #00000055;
+    border:0;
+    border-radius:0;
+    background:#111110;
+    box-shadow:none;
   }
   .sidebar { background:#1b1b1a; }
-  .editor { background:#20201f; }
+  .editor {
+    height:auto;
+    margin:18px 18px 18px 0;
+    overflow-x:hidden;
+    border:1px solid #3d3d3a;
+    border-radius:17px;
+    background:#20201f;
+    box-shadow:0 24px 72px #00000070, 0 0 0 1px #00000055;
+  }
   .reminders-panel { box-shadow:0 14px 34px #00000033; }
 }

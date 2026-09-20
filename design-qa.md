@@ -12,14 +12,14 @@
 
 - Source visual truth: `C:\Users\emper\AppData\Local\Temp\codex-clipboard-5305a886-0249-404c-8e34-75f648b050b7.png` — dark dashboard presented as a rounded application window above a darker outer page.
 - Implementation evidence: browser-rendered production preview at `http://localhost:5175/`, captured at 1280 × 720 CSS pixels, DPR 1, in dark theme with an authenticated empty note and then the existing To-do tab active.
-- Normalization: compared the app content region only; browser chrome and the reference dashboard's unrelated project controls were excluded. Both views use a full-width desktop frame with a narrow exposed background margin.
-- Full-view evidence: the implementation keeps the pre-existing Notes sidebar and Notes/To-do toggle inside a single 17px-radius framed workspace with a 18px dark outer gutter and subtle deep shadow. Both existing tabs remained usable.
-- Focused-region evidence: the top-left frame corner, border, sidebar edge, and empty canvas were inspected at the same rendered size. No new content card, heading, or tab was introduced.
+- Normalization: compared the editor region only; browser chrome, the reference dashboard's unrelated project controls, and the product's existing left navigation were excluded. The target effect is a rounded right-side workspace with a narrow exposed background gutter.
+- Full-view evidence: the implementation retains the pre-existing full-height Notes sidebar and places the original editor canvas in its own 17px-radius framed surface with a dark outer gutter and subtle deep shadow. Both existing tabs remained usable.
+- Focused-region evidence: the editor's top-left frame corner, border, sidebar division, and empty canvas were inspected at the same rendered size. No new content card, heading, or tab was introduced.
 
 ## Findings and fixes
 
-- [P1] The first desktop pass changed the workspace composition rather than matching the supplied inset-window treatment.
-  - Fix: restored the prior Notes and To-do content layout and applied the reference only as a desktop frame: an existing workspace window with a rounded border, dark outer backdrop, and subtle elevation.
+- [P1] The first desktop pass applied the inset-window treatment to the left navigation as well as the workspace.
+  - Fix: restored the navigation as a full-height menu surface and constrained the rounded border, dark outer gutter, and elevation to the editor/reminders canvas on the right.
 
 - [P1] The delete swipe showed a colored rail but its action icon was obscured by the note controls.
   - Fix: the revealed Delete/Folder controls now mount in their own fixed interaction layer, with visible Lucide icons and high-contrast semantic rails.
@@ -49,7 +49,7 @@
 
 ## Visual verification
 
-- Desktop frame capture confirms the reference's inset-window composition: a rounded, bordered workspace sits above a darker page background, while the original note canvas and existing Notes/To-do navigation stay intact.
+- Desktop frame capture confirms the corrected composition: the rounded, bordered surface is limited to the right workspace, while the left navigation stays outside it and the original Notes/To-do navigation remains intact.
 - Desktop capture confirms the search field no longer has a keyboard badge, Folder/Inbox is absent from the canvas, timestamps are right-aligned, and all note-menu icons share a consistent leading edge.
 - Mobile capture at 390 × 844 confirms the header add button is absent, the navigation capture action is context-aware, and the sync indicator is absent. The mobile folder selector remains intentionally available; the desktop-only canvas change does not leak to mobile.
 - Both swipe rails were exercised in the rendered browser: left exposed a red trash/Delete control and opened the confirmation dialog; right exposed a green Folder control and opened the folder picker. The no-folder state was also checked.
