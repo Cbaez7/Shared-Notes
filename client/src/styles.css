@@ -265,54 +265,23 @@
   .mobile-task-capture footer .primary { color:#20201f; background:#ecece8; }
 }
 
-/* Desktop workspace — adapts the supplied template's quiet heading, grouped
-   surfaces, and bordered controls without changing the Notes/To-do navigation. */
-.desktop-editor-heading { display:none; }
+/* Desktop-only frame: preserve the existing Notes and To-do workspace, but
+   present it as one quiet application window above the darker page backdrop. */
 @media (min-width:768px) {
-  .app, .app.notes-view { grid-template-columns:296px minmax(0,1fr); }
-  .sidebar { border-color:#353533; background:#1b1b1a; }
-  .app-identity { padding:20px 16px 15px!important; }
-  .sidebar .search { min-height:40px; margin:0 14px 13px; border-color:#3d3d3a; border-radius:10px; background:#242423; }
-  .workspace-tabs { margin:0 14px 16px; padding:4px; border:1px solid #383836; border-radius:11px; background:#252524; }
-  .workspace-tabs button { min-height:34px; border-radius:8px; }
-  .workspace-tabs button.active { background:#373735; }
-  .folder-tree { padding:0 12px 14px; }
-  .folder-tree > div { margin:4px 5px 8px; }
-  .note-list { display:grid; align-content:start; gap:5px; padding:10px 10px 18px; border-top-color:#343432; }
-  .note-row { border:1px solid transparent; border-radius:11px; }
-  .note-row:hover { border-color:#41413f; background:#292928; }
-  .note-row.selected { border-color:#4b4b48; background:#343432; }
-  .note-open { padding:12px; }
-  .note-menu-trigger { top:33px; }
-
-  .editor { overflow:auto; background:#20201f; }
-  .editor-head { display:block; min-height:0; padding:0; border:0; }
-  .editor-head > .back { display:none; }
-  .desktop-editor-heading { display:flex; align-items:center; justify-content:space-between; gap:24px; width:min(100% - 64px, 960px); margin:0 auto; padding:42px 0 28px; border-bottom:1px solid #393937; }
-  .desktop-editor-heading > div { display:grid; gap:5px; }
-  .desktop-editor-heading span { color:#989894; font:500 .66rem/1.3 'DM Mono',monospace; letter-spacing:.11em; }
-  .desktop-editor-heading h2 { margin:0; color:#f0f0ec; font:700 1.55rem/1.2 Manrope,Arial,sans-serif; letter-spacing:-.035em; }
-  .desktop-editor-heading p { margin:0; color:#a8a8a4; font-size:.84rem; }
-  .desktop-editor-heading > button { display:inline-flex; align-items:center; gap:7px; flex:0 0 auto; min-height:40px; border:1px solid #51514e; border-radius:10px; padding:0 14px; color:#e9e9e4; background:#2b2b29; font-size:.78rem; font-weight:700; }
-  .desktop-editor-heading > button:hover { border-color:#676762; background:#363633; }
-  .notes-view .note-location { display:none; }
-  .notes-view .editor .title { width:min(100% - 64px, 960px); max-width:none; margin:28px auto 12px; border:1px solid #42423f; border-radius:12px; padding:15px 17px; color:#f1f1ed; background:#292927; font:700 1.2rem/1.3 Manrope,Arial,sans-serif; letter-spacing:-.025em; }
-  .notes-view .editor .title:focus { border-color:#696965; box-shadow:0 0 0 3px #ffffff0c; }
-  .notes-view .editor textarea { width:min(100% - 64px, 960px); max-width:none; flex:0 0 auto; min-height:calc(100dvh - 286px); margin:0 auto 48px; border:1px solid #42423f; border-radius:12px; padding:18px; color:#d9d9d4; background:#292927; font-size:.98rem; line-height:1.8; }
-  .notes-view .editor textarea:focus { border-color:#696965; box-shadow:0 0 0 3px #ffffff0c; }
-  .empty-editor { width:min(100% - 64px, 960px); margin:78px auto; padding:36px; border:1px solid #42423f; border-radius:14px; background:#292927; }
-  .task-editor, .task-document { width:min(100% - 64px, 960px); max-width:none; margin:0 auto 48px; }
-  .task-editor { margin-top:42px; padding:0; }
-  .task-editor h2 { margin-top:9px; font-size:2rem; }
-  .task-editor form { margin-top:24px; border:1px solid #42423f; border-radius:12px; padding:8px; background:#292927; }
-  .task-editor input { border:0; background:transparent; }
-  .task-summary { margin-top:24px; padding:18px; border:1px solid #42423f; border-radius:12px; background:#292927; }
-  .task-document { margin-top:42px; padding:28px; border:1px solid #42423f; border-radius:14px; background:#292927; }
-  .reminders-panel { border-color:#42423f; background:#292927; box-shadow:0 18px 42px #0000002b; }
-}
-@media (min-width:1151px) {
-  .notes-view .desktop-editor-heading,
-  .notes-view .editor .title,
-  .notes-view .editor textarea,
-  .notes-view .empty-editor { width:min(calc(100% - 390px), 860px); margin-right:0; margin-left:clamp(32px, 8%, 120px); }
+  html { min-height:100%; background:#111110; }
+  body { height:100dvh; min-height:0; overflow:hidden; padding:18px; background:#111110; }
+  #root { height:100%; min-height:0; }
+  .app, .app.notes-view {
+    width:min(100%, 1536px);
+    height:calc(100dvh - 36px);
+    margin:0 auto;
+    overflow:hidden;
+    border:1px solid #3d3d3a;
+    border-radius:17px;
+    background:#1e1e1d;
+    box-shadow:0 24px 72px #00000070, 0 0 0 1px #00000055;
+  }
+  .sidebar { background:#1b1b1a; }
+  .editor { background:#20201f; }
+  .reminders-panel { box-shadow:0 14px 34px #00000033; }
 }
