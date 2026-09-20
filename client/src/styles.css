@@ -224,12 +224,15 @@
 
 /* Desktop-only canvas and sidebar refinements. */
 @media (min-width:768px) {
-  .quick-add { position:relative; }
-  .quick-add-trigger[aria-expanded='true'] { color:#181817; background:#eeeee9; box-shadow:0 5px 16px #00000045; }
-  .quick-add-menu { position:absolute; z-index:30; top:calc(100% + 9px); right:0; display:grid; width:238px; gap:3px; border:1px solid #454541; border-radius:13px; padding:6px; background:#292927; box-shadow:0 18px 44px #00000070; transform-origin:top right; animation:quick-add-reveal .18s cubic-bezier(.2,.8,.2,1) both; }
-  .quick-add-menu > button { display:grid; grid-template-columns:30px minmax(0,1fr); align-items:center; gap:9px; width:100%; border:0; border-radius:9px; padding:9px; color:#e8e8e3; background:transparent; text-align:left; animation:quick-add-item .22s cubic-bezier(.2,.8,.2,1) both; }
-  .quick-add-menu > button:nth-child(2) { animation-delay:.025s; }
-  .quick-add-menu > button:nth-child(3) { animation-delay:.05s; }
+  .quick-add { position:relative; isolation:isolate; }
+  .quick-add::after { position:absolute; z-index:20; top:24px; right:5px; width:22px; height:27px; border-radius:0 0 16px 16px; background:#292927; content:''; opacity:0; pointer-events:none; transform:scaleY(.15); transform-origin:top; transition:opacity .08s linear, transform .32s cubic-bezier(.22,1.35,.36,1); }
+  .quick-add:has(.quick-add-menu)::after { opacity:1; transform:scaleY(1); }
+  .quick-add-trigger { position:relative; z-index:31; transition:color .18s ease, background .18s ease, border-radius .32s cubic-bezier(.22,1.35,.36,1), box-shadow .18s ease, transform .32s cubic-bezier(.22,1.35,.36,1); }
+  .quick-add-trigger[aria-expanded='true'] { color:#181817; border-radius:12px; background:#eeeee9; box-shadow:0 5px 16px #00000045; transform:scale(1.06); }
+  .quick-add-menu { position:absolute; z-index:30; top:calc(100% + 5px); right:0; display:grid; width:238px; gap:3px; border:1px solid #454541; border-radius:13px; padding:6px; background:#292927; box-shadow:0 18px 44px #00000070; transform-origin:top right; animation:quick-add-gooey-reveal .42s cubic-bezier(.22,1.12,.36,1) both; }
+  .quick-add-menu > button { display:grid; grid-template-columns:30px minmax(0,1fr); align-items:center; gap:9px; width:100%; border:0; border-radius:9px; padding:9px; color:#e8e8e3; background:transparent; text-align:left; animation:quick-add-item .26s cubic-bezier(.22,1.12,.36,1) both; animation-delay:.13s; }
+  .quick-add-menu > button:nth-child(2) { animation-delay:.17s; }
+  .quick-add-menu > button:nth-child(3) { animation-delay:.21s; }
   .quick-add-menu > button:hover, .quick-add-menu > button:focus-visible { outline:0; background:#393937; }
   .quick-add-menu > button:active { transform:scale(.98); }
   .quick-add-icon { display:grid; place-items:center; width:30px; height:30px; border-radius:8px; color:#d8d8d3; background:#343432; }
@@ -277,8 +280,8 @@
   .mobile-task-capture footer .primary { color:#20201f; background:#ecece8; }
 }
 
-@keyframes quick-add-reveal { from { opacity:0; transform:translateY(-5px) scale(.96); } to { opacity:1; transform:translateY(0) scale(1); } }
-@keyframes quick-add-item { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+@keyframes quick-add-gooey-reveal { 0% { opacity:0; border-radius:18px; transform:translateY(-5px) scaleX(.15) scaleY(.28); } 55% { opacity:1; border-radius:15px; transform:translateY(1px) scaleX(1.035) scaleY(1.025); } 100% { opacity:1; border-radius:13px; transform:translateY(0) scale(1); } }
+@keyframes quick-add-item { from { opacity:0; transform:translateY(-7px) scale(.96); } to { opacity:1; transform:translateY(0) scale(1); } }
 
 /* Desktop-only frame: preserve the existing navigation surface, and present
    only the workspace canvas on the right as a quiet application window. */
