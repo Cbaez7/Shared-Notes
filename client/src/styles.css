@@ -281,7 +281,7 @@
     background:#181817;
     box-shadow:none;
   }
-  .sidebar { height:100%; min-height:0; overflow:hidden; background:#181817; }
+  .sidebar { height:100%; min-height:0; overflow:hidden; border-right:0; background:#181817; }
   .sidebar .note-list { min-height:0; flex:1 1 auto; overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; }
   .sidebar .sidebar-utility { flex:0 0 auto; margin-top:auto; }
   .editor {

@@ -24,6 +24,8 @@
   - Fix: matched the surrounding canvas to the menu surface, extended the right workspace flush to the right/bottom edge, and constrained scrolling to the note/task list so the account and theme controls remain pinned in the sidebar footer.
 - [P2] The editor frame retained an unnecessary straight top border.
   - Fix: removed the top edge while preserving the rounded left-side transition and the existing header divider inside the workspace.
+- [P2] The sidebar divider remained visible beside the rounded workspace.
+  - Fix: removed the desktop sidebar's right border so the menu surface transitions directly into the workspace gutter.
 
 - [P1] The delete swipe showed a colored rail but its action icon was obscured by the note controls.
   - Fix: the revealed Delete/Folder controls now mount in their own fixed interaction layer, with visible Lucide icons and high-contrast semantic rails.
