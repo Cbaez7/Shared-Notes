@@ -10,6 +10,9 @@
 
 ## Findings and fixes
 
+- [P1] The desktop workspace lacked the supplied template's clear page hierarchy and grouped, bordered controls.
+  - Fix: rebuilt the desktop shell around a compact workspace heading, a title field, a writing surface, and matching task cards. The existing Notes and To-do tabs remain the only workspace tabs.
+
 - [P1] The delete swipe showed a colored rail but its action icon was obscured by the note controls.
   - Fix: the revealed Delete/Folder controls now mount in their own fixed interaction layer, with visible Lucide icons and high-contrast semantic rails.
 - [P1] Swipe actions routed into the long-press dropdown instead of a focused follow-up action.
@@ -37,6 +40,8 @@
   - Fix: lowered it within the safe area without changing desktop positioning.
 
 ## Visual verification
+
+- Desktop capture confirms the template-derived workspace hierarchy at 1280px: compact header, bordered title/body surfaces, and a matching To-do task form and summary card. Switching between the existing Notes and To-do tabs remained functional; no tabs were introduced.
 
 - Desktop capture confirms the search field no longer has a keyboard badge, Folder/Inbox is absent from the canvas, timestamps are right-aligned, and all note-menu icons share a consistent leading edge.
 - Mobile capture at 390 × 844 confirms the header add button is absent, the navigation capture action is context-aware, and the sync indicator is absent. The mobile folder selector remains intentionally available; the desktop-only canvas change does not leak to mobile.
