@@ -289,6 +289,7 @@
     margin:18px 0 0;
     overflow-x:hidden;
     border:1px solid #3d3d3a;
+    border-top:0;
     border-right:0;
     border-bottom:0;
     border-radius:17px 0 0 0;

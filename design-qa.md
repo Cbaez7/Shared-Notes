@@ -22,6 +22,8 @@
   - Fix: restored the navigation as a full-height menu surface and constrained the rounded border, dark outer gutter, and elevation to the editor/reminders canvas on the right.
 - [P1] The editor frame still left a black gutter at the right and bottom edges, while the sidebar could shift its account controls during long-list scrolling.
   - Fix: matched the surrounding canvas to the menu surface, extended the right workspace flush to the right/bottom edge, and constrained scrolling to the note/task list so the account and theme controls remain pinned in the sidebar footer.
+- [P2] The editor frame retained an unnecessary straight top border.
+  - Fix: removed the top edge while preserving the rounded left-side transition and the existing header divider inside the workspace.
 
 - [P1] The delete swipe showed a colored rail but its action icon was obscured by the note controls.
   - Fix: the revealed Delete/Folder controls now mount in their own fixed interaction layer, with visible Lucide icons and high-contrast semantic rails.
